@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,22 +15,27 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 # Base low-level functions used by the API proper.
 # Unlikely to be used directly unless you're expanding the API.
-
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from collections import namedtuple
-from .base_usb import ALL as _RECEIVER_USB_IDS
-import hidapi as _hid
-from . import hidpp20 as _hidpp20
-from . import hidpp10 as _hidpp10
-from .common import strhex as _strhex, KwException as _KwException, pack as _pack
-from time import time as _timestamp
+from logging import DEBUG as _DEBUG
+from logging import getLogger
 from random import getrandbits as _random_bits
+from time import time as _timestamp
 
-from logging import getLogger, DEBUG as _DEBUG
+import hidapi as _hid
+
+from . import hidpp10 as _hidpp10
+from . import hidpp20 as _hidpp20
+from .base_usb import ALL as _RECEIVER_USB_IDS
+from .common import KwException as _KwException
+from .common import pack as _pack
+from .common import strhex as _strhex
 
 _log = getLogger(__name__)
 del getLogger
