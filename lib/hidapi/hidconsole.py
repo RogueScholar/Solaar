@@ -51,6 +51,7 @@ def strhex(d):
 
 try:
     unicode
+
     # this is certanly Python 2
     def is_string(d):
         return isinstance(d, unicode)
@@ -97,13 +98,11 @@ def _print(marker, data, scroll=False):
 
         if interactive and scroll:
             # scroll the entire screen above the current line up by 1 line
-            sys.stdout.write(
-                "\033[s"  # save cursor position
-                "\033[S"  # scroll up
-                "\033[A"  # cursor up
-                "\033[L"  # insert 1 line
-                "\033[G"
-            )  # move cursor to column 1
+            sys.stdout.write("\033[s"  # save cursor position
+                             "\033[S"  # scroll up
+                             "\033[A"  # cursor up
+                             "\033[L"  # insert 1 line
+                             "\033[G")  # move cursor to column 1
         sys.stdout.write(s)
         if interactive and scroll:
             # restore cursor position
@@ -189,23 +188,20 @@ def _open(args):
     if not handle:
         sys.exit("!! Failed to open %s, aborting." % device)
 
-    print(
-        ".. Opened handle %r, vendor %r product %r serial %r."
-        % (
-            handle,
-            _hid.get_manufacturer(handle),
-            _hid.get_product(handle),
-            _hid.get_serial(handle),
-        )
-    )
+    print(".. Opened handle %r, vendor %r product %r serial %r." % (
+        handle,
+        _hid.get_manufacturer(handle),
+        _hid.get_product(handle),
+        _hid.get_serial(handle),
+    ))
     if args.hidpp:
         if _hid.get_manufacturer(handle) != b"Logitech":
             sys.exit("!! Only Logitech devices support the HID++ protocol.")
         print(".. HID++ validation enabled.")
     else:
         if _hid.get_manufacturer(
-            handle
-        ) == b"Logitech" and b"Receiver" in _hid.get_product(handle):
+                handle) == b"Logitech" and b"Receiver" in _hid.get_product(
+                    handle):
             args.hidpp = True
             print(".. Logitech receiver detected, HID++ validation enabled.")
 
@@ -222,8 +218,7 @@ def _parse_arguments():
 
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument(
-        "--history", help="history file (default ~/.hidconsole-history)"
-    )
+        "--history", help="history file (default ~/.hidconsole-history)")
     arg_parser.add_argument(
         "--hidpp",
         action="store_true",
@@ -243,14 +238,17 @@ def main():
     handle = _open(args)
 
     if interactive:
-        print(".. Press ^C/^D to exit, or type hex bytes to write to the device.")
+        print(
+            ".. Press ^C/^D to exit, or type hex bytes to write to the device."
+        )
 
         import readline
 
         if args.history is None:
             import os.path
 
-            args.history = os.path.join(os.path.expanduser("~"), ".hidconsole-history")
+            args.history = os.path.join(os.path.expanduser("~"),
+                                        ".hidconsole-history")
         try:
             readline.read_history_file(args.history)
         except:
@@ -260,7 +258,7 @@ def main():
     try:
         from threading import Thread
 
-        t = Thread(target=_continuous_read, args=(handle,))
+        t = Thread(target=_continuous_read, args=(handle, ))
         t.daemon = True
         t.start()
 

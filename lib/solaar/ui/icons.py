@@ -28,7 +28,6 @@ from gi.repository import Gtk
 _log = getLogger(__name__)
 del getLogger
 
-
 #
 #
 #
@@ -56,21 +55,20 @@ def _look_for_application_icons():
 
     if _log.isEnabledFor(_DEBUG):
         _log.debug("sys.path[0] = %s", _sys.path[0])
-    prefix_share = _path.normpath(_path.join(_path.realpath(_sys.path[0]), ".."))
-    src_share = _path.normpath(_path.join(_path.realpath(_sys.path[0]), "..", "share"))
+    prefix_share = _path.normpath(
+        _path.join(_path.realpath(_sys.path[0]), ".."))
+    src_share = _path.normpath(
+        _path.join(_path.realpath(_sys.path[0]), "..", "share"))
     local_share = _environ.get(
-        "XDG_DATA_HOME", _path.expanduser(_path.join("~", ".local", "share"))
-    )
+        "XDG_DATA_HOME", _path.expanduser(_path.join("~", ".local", "share")))
     data_dirs = _environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share")
     repo_share = _path.normpath(
-        _path.join(_path.dirname(__file__), "..", "..", "..", "share")
-    )
+        _path.join(_path.dirname(__file__), "..", "..", "..", "share"))
     del _sys
 
     share_solaar = [prefix_share] + list(
         _path.join(x, "solaar")
-        for x in [src_share, local_share, repo_share] + data_dirs.split(":")
-    )
+        for x in [src_share, local_share, repo_share] + data_dirs.split(":"))
     for location in share_solaar:
         location = _path.join(location, "icons")
         if _log.isEnabledFor(_DEBUG):
@@ -107,11 +105,11 @@ def _init_icon_paths():
     _has_mint_icons = _default_theme.has_icon("battery-good-symbolic")
     _has_gpm_icons = _default_theme.has_icon("gpm-battery-020-charging")
     _has_oxygen_icons = _default_theme.has_icon(
-        "battery-charging-caution"
-    ) and _default_theme.has_icon("battery-charging-040")
+        "battery-charging-caution") and _default_theme.has_icon(
+            "battery-charging-040")
     _has_gnome_icons = _default_theme.has_icon(
-        "battery-caution-charging"
-    ) and _default_theme.has_icon("battery-full-charged")
+        "battery-caution-charging") and _default_theme.has_icon(
+            "battery-full-charged")
     _has_elementary_icons = _default_theme.has_icon("battery-020-charging")
 
     if _log.isEnabledFor(_DEBUG):
@@ -124,13 +122,8 @@ def _init_icon_paths():
             _has_elementary_icons,
         )
 
-    if (
-        not _has_mint_icons
-        and not _has_gpm_icons
-        and not _has_oxygen_icons
-        and not _has_gnome_icons
-        and not _has_elementary_icons
-    ):
+    if (not _has_mint_icons and not _has_gpm_icons and not _has_oxygen_icons
+            and not _has_gnome_icons and not _has_elementary_icons):
         _log.warning("failed to detect a known icon set")
 
 
@@ -163,35 +156,37 @@ def _battery_icon_name(level, charging):
     if _has_mint_icons:
         if level == 100 and charging:
             return "battery-full-charged-symbolic"
-        level_name = ("empty", "caution", "low", "good", "good", "full")[
-            level_approx // 20
-        ]
-        return "battery-%s%s-symbolic" % (level_name, "-charging" if charging else "")
+        level_name = ("empty", "caution", "low", "good", "good",
+                      "full")[level_approx // 20]
+        return "battery-%s%s-symbolic" % (level_name,
+                                          "-charging" if charging else "")
 
     if _has_gpm_icons:
         if level == 100 and charging:
             return "gpm-battery-charged"
-        return "gpm-battery-%03d%s" % (level_approx, "-charging" if charging else "")
+        return "gpm-battery-%03d%s" % (level_approx,
+                                       "-charging" if charging else "")
 
     if _has_oxygen_icons:
         if level_approx == 100 and charging:
             return "battery-charging"
-        level_name = ("low", "caution", "040", "060", "080", "100")[level_approx // 20]
+        level_name = ("low", "caution", "040", "060", "080",
+                      "100")[level_approx // 20]
         return "battery%s-%s" % ("-charging" if charging else "", level_name)
 
     if _has_elementary_icons:
         if level == 100 and charging:
             return "battery-charged"
-        return "battery-%03d%s" % (level_approx, "-charging" if charging else "")
+        return "battery-%03d%s" % (level_approx,
+                                   "-charging" if charging else "")
 
     if _has_gnome_icons:
         if level == 100 and charging:
             return "battery-full-charged"
         if level_approx == 0 and charging:
             return "battery-caution-charging"
-        level_name = ("empty", "caution", "low", "good", "good", "full")[
-            level_approx // 20
-        ]
+        level_name = ("empty", "caution", "low", "good", "good",
+                      "full")[level_approx // 20]
         return "battery-%s%s" % (level_name, "-charging" if charging else "")
 
     # fallback... most likely will fail
@@ -215,7 +210,6 @@ def lux(level=None):
 #
 #
 
-
 _ICON_SETS = {}
 
 
@@ -234,8 +228,8 @@ def device_icon_set(name="_", kind=None):
             elif str(kind) == "touchpad":
                 names += ("input-mouse", "input-tablet")
             elif str(kind) == "trackball":
-                names += ("input-mouse",)
-            names += ("input-" + str(kind),)
+                names += ("input-mouse", )
+            names += ("input-" + str(kind), )
         # names += (name.replace(' ', '-'),)
 
         source = Gtk.IconSource.new()
