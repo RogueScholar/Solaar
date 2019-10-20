@@ -32,6 +32,7 @@ from time import time as _timestamp
 from random import getrandbits as _random_bits
 
 from logging import getLogger, DEBUG as _DEBUG
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -64,17 +65,21 @@ class NoReceiver(_KwException):
     receiver is no longer available. Should only happen if the receiver is
     physically disconnected from the machine, or its kernel driver module is
     unloaded."""
+
     pass
 
 
 class NoSuchDevice(_KwException):
     """Raised when trying to reach a device number not paired to the receiver."""
+
     pass
 
 
 class DeviceUnreachable(_KwException):
     """Raised when a request is made to an unreachable (turned off) device."""
+
     pass
+
 
 #
 #
@@ -91,6 +96,7 @@ def receivers():
 def notify_on_receivers_glib(callback):
     """Watch for matching devices and notifies the callback on the GLib thread."""
     _hid.monitor_glib(callback, *_RECEIVER_USB_IDS)
+
 
 #
 #
@@ -158,13 +164,19 @@ def write(handle, devnumber, data):
     assert data is not None
     assert isinstance(data, bytes), (repr(data), type(data))
 
-    if len(data) > _SHORT_MESSAGE_SIZE - 2 or data[:1] == b'\x82':
-        wdata = _pack('!BB18s', 0x11, devnumber, data)
+    if len(data) > _SHORT_MESSAGE_SIZE - 2 or data[:1] == b"\x82":
+        wdata = _pack("!BB18s", 0x11, devnumber, data)
     else:
-        wdata = _pack('!BB5s', 0x10, devnumber, data)
+        wdata = _pack("!BB5s", 0x10, devnumber, data)
     if _log.isEnabledFor(_DEBUG):
-        _log.debug("(%s) <= w[%02X %02X %s %s]", handle, ord(
-            wdata[:1]), devnumber, _strhex(wdata[2:4]), _strhex(wdata[4:]))
+        _log.debug(
+            "(%s) <= w[%02X %02X %s %s]",
+            handle,
+            ord(wdata[:1]),
+            devnumber,
+            _strhex(wdata[2:4]),
+            _strhex(wdata[4:]),
+        )
 
     try:
         _hid.write(int(handle), wdata)
@@ -213,24 +225,38 @@ def _read(handle, timeout):
     if data:
         assert isinstance(data, bytes), (repr(data), type(data))
         report_id = ord(data[:1])
-        assert ((report_id & 0xF0 == 0) or
-                (report_id == 0x10 and len(data) == _SHORT_MESSAGE_SIZE) or
-                (report_id == 0x11 and len(data) == _LONG_MESSAGE_SIZE) or
-                (report_id == 0x20 and len(data) == _MEDIUM_MESSAGE_SIZE)), \
-            "unexpected message size: report_id %02X message %s" % (
-                report_id, _strhex(data))
+        assert (
+            (report_id & 0xF0 == 0)
+            or (report_id == 0x10 and len(data) == _SHORT_MESSAGE_SIZE)
+            or (report_id == 0x11 and len(data) == _LONG_MESSAGE_SIZE)
+            or (report_id == 0x20 and len(data) == _MEDIUM_MESSAGE_SIZE)
+        ), (
+            "unexpected message size: report_id %02X message %s"
+            % (report_id, _strhex(data))
+        )
         if report_id & 0xF0 == 0x00:
             if _log.isEnabledFor(_DEBUG):
-                _log.debug("(%s) => r[%02X %s] ignoring unknown report",
-                           handle, report_id, _strhex(data[1:]))
+                _log.debug(
+                    "(%s) => r[%02X %s] ignoring unknown report",
+                    handle,
+                    report_id,
+                    _strhex(data[1:]),
+                )
             return
         devnumber = ord(data[1:2])
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("(%s) => r[%02X %02X %s %s]", handle, report_id, devnumber, _strhex(
-                data[2:4]), _strhex(data[4:]))
+            _log.debug(
+                "(%s) => r[%02X %02X %s %s]",
+                handle,
+                report_id,
+                devnumber,
+                _strhex(data[2:4]),
+                _strhex(data[4:]),
+            )
 
         return report_id, devnumber, data[2:]
+
 
 #
 #
@@ -248,8 +274,7 @@ def _skip_incoming(handle, ihandle, notifications_hook):
             # read whatever is already in the buffer, if any
             data = _hid.read(ihandle, _MAX_READ_SIZE, 0)
         except Exception as reason:
-            _log.error(
-                "read failed, assuming receiver %s no longer available", handle)
+            _log.error("read failed, assuming receiver %s no longer available", handle)
             close(handle)
             raise NoReceiver(reason=reason)
 
@@ -257,12 +282,15 @@ def _skip_incoming(handle, ihandle, notifications_hook):
             assert isinstance(data, bytes), (repr(data), type(data))
             report_id = ord(data[:1])
             if _log.isEnabledFor(_DEBUG):
-                assert ((report_id & 0xF0 == 0) or
-                        (report_id == 0x10 and len(data) == _SHORT_MESSAGE_SIZE) or
-                        (report_id == 0x11 and len(data) == _LONG_MESSAGE_SIZE) or
-                        (report_id == 0x20 and len(data) == _MEDIUM_MESSAGE_SIZE)), \
-                    "unexpected message size: report_id %02X message %s" % (
-                        report_id, _strhex(data))
+                assert (
+                    (report_id & 0xF0 == 0)
+                    or (report_id == 0x10 and len(data) == _SHORT_MESSAGE_SIZE)
+                    or (report_id == 0x11 and len(data) == _LONG_MESSAGE_SIZE)
+                    or (report_id == 0x20 and len(data) == _MEDIUM_MESSAGE_SIZE)
+                ), (
+                    "unexpected message size: report_id %02X message %s"
+                    % (report_id, _strhex(data))
+                )
             if notifications_hook and report_id & 0xF0:
                 n = make_notification(ord(data[1:2]), data[2:])
                 if n:
@@ -282,26 +310,30 @@ def make_notification(devnumber, data):
 
     address = ord(data[1:2])
     if (
-            # standard HID++ 1.0 notification, SubId may be 0x40 - 0x7F
-            (sub_id >= 0x40)
-            or
-            # custom HID++1.0 battery events, where SubId is 0x07/0x0D
-            (sub_id in (0x07, 0x0D) and len(data)
-             == 5 and data[4:5] == b'\x00')
-            or
-            # custom HID++1.0 illumination event, where SubId is 0x17
-            (sub_id == 0x17 and len(data) == 5)
-            or
-            # HID++ 2.0 feature notifications have the SoftwareID 0
-            (address & 0x0F == 0x00)
+        # standard HID++ 1.0 notification, SubId may be 0x40 - 0x7F
+        (sub_id >= 0x40)
+        or
+        # custom HID++1.0 battery events, where SubId is 0x07/0x0D
+        (sub_id in (0x07, 0x0D) and len(data) == 5 and data[4:5] == b"\x00")
+        or
+        # custom HID++1.0 illumination event, where SubId is 0x17
+        (sub_id == 0x17 and len(data) == 5)
+        or
+        # HID++ 2.0 feature notifications have the SoftwareID 0
+        (address & 0x0F == 0x00)
     ):
         return _HIDPP_Notification(devnumber, sub_id, address, data[2:])
 
 
 _HIDPP_Notification = namedtuple(
-    '_HIDPP_Notification', ('devnumber', 'sub_id', 'address', 'data'))
-_HIDPP_Notification.__str__ = lambda self: 'Notification(%d,%02X,%02X,%s)' % (
-    self.devnumber, self.sub_id, self.address, _strhex(self.data))
+    "_HIDPP_Notification", ("devnumber", "sub_id", "address", "data")
+)
+_HIDPP_Notification.__str__ = lambda self: "Notification(%d,%02X,%02X,%s)" % (
+    self.devnumber,
+    self.sub_id,
+    self.address,
+    _strhex(self.data),
+)
 _HIDPP_Notification.__unicode__ = _HIDPP_Notification.__str__
 del namedtuple
 
@@ -334,22 +366,23 @@ def request(handle, devnumber, request_id, *params):
         # This only applies to peripheral requests, ofc.
         request_id = (request_id & 0xFFF0) | 0x08 | _random_bits(3)
 
-    timeout = _RECEIVER_REQUEST_TIMEOUT if devnumber == 0xFF else _DEVICE_REQUEST_TIMEOUT
+    timeout = (
+        _RECEIVER_REQUEST_TIMEOUT if devnumber == 0xFF else _DEVICE_REQUEST_TIMEOUT
+    )
     # be extra patient on long register read
     if request_id & 0xFF00 == 0x8300:
         timeout *= 2
 
     if params:
-        params = b''.join(_pack('B', p) if isinstance(
-            p, int) else p for p in params)
+        params = b"".join(_pack("B", p) if isinstance(p, int) else p for p in params)
     else:
-        params = b''
+        params = b""
     # if _log.isEnabledFor(_DEBUG):
     # 	_log.debug("(%s) device %d request_id {%04X} params [%s]", handle, devnumber, request_id, _strhex(params))
-    request_data = _pack('!H', request_id) + params
+    request_data = _pack("!H", request_id) + params
 
     ihandle = int(handle)
-    notifications_hook = getattr(handle, 'notifications_hook', None)
+    notifications_hook = getattr(handle, "notifications_hook", None)
     _skip_incoming(handle, ihandle, notifications_hook)
     write(ihandle, devnumber, request_data)
 
@@ -363,7 +396,11 @@ def request(handle, devnumber, request_id, *params):
         if reply:
             report_id, reply_devnumber, reply_data = reply
             if reply_devnumber == devnumber:
-                if report_id == 0x10 and reply_data[:1] == b'\x8F' and reply_data[1:3] == request_data[:2]:
+                if (
+                    report_id == 0x10
+                    and reply_data[:1] == b"\x8F"
+                    and reply_data[1:3] == request_data[:2]
+                ):
                     error = ord(reply_data[3:4])
 
                     # if error == _hidpp10.ERROR.resource_error: # device unreachable
@@ -375,17 +412,30 @@ def request(handle, devnumber, request_id, *params):
                     # 	raise NoSuchDevice(number=devnumber, request=request_id)
 
                     if _log.isEnabledFor(_DEBUG):
-                        _log.debug("(%s) device 0x%02X error on request {%04X}: %d = %s",
-                                   handle, devnumber, request_id, error, _hidpp10.ERROR[error])
+                        _log.debug(
+                            "(%s) device 0x%02X error on request {%04X}: %d = %s",
+                            handle,
+                            devnumber,
+                            request_id,
+                            error,
+                            _hidpp10.ERROR[error],
+                        )
                     return
 
-                if reply_data[:1] == b'\xFF' and reply_data[1:3] == request_data[:2]:
+                if reply_data[:1] == b"\xFF" and reply_data[1:3] == request_data[:2]:
                     # a HID++ 2.0 feature call returned with an error
                     error = ord(reply_data[3:4])
-                    _log.error("(%s) device %d error on feature request {%04X}: %d = %s",
-                               handle, devnumber, request_id, error, _hidpp20.ERROR[error])
+                    _log.error(
+                        "(%s) device %d error on feature request {%04X}: %d = %s",
+                        handle,
+                        devnumber,
+                        request_id,
+                        error,
+                        _hidpp20.ERROR[error],
+                    )
                     raise _hidpp20.FeatureCallError(
-                        number=devnumber, request=request_id, error=error, params=params)
+                        number=devnumber, request=request_id, error=error, params=params
+                    )
 
                 if reply_data[:2] == request_data[:2]:
                     if request_id & 0xFE00 == 0x8200:
@@ -425,8 +475,14 @@ def request(handle, devnumber, request_id, *params):
         # if _log.isEnabledFor(_DEBUG):
         # 	_log.debug("(%s) still waiting for reply, delta %f", handle, delta)
 
-    _log.warn("timeout (%0.2f/%0.2f) on device %d request {%04X} params [%s]",
-              delta, timeout, devnumber, request_id, _strhex(params))
+    _log.warn(
+        "timeout (%0.2f/%0.2f) on device %d request {%04X} params [%s]",
+        delta,
+        timeout,
+        devnumber,
+        request_id,
+        _strhex(params),
+    )
     # raise DeviceUnreachable(number=devnumber, request=request_id)
 
 
@@ -449,10 +505,10 @@ def ping(handle, devnumber):
     # reply, and set most significant (0x8) bit in SoftwareId so that the reply
     # is always distinguishable from notifications
     request_id = 0x0018 | _random_bits(3)
-    request_data = _pack('!HBBB', request_id, 0, 0, _random_bits(8))
+    request_data = _pack("!HBBB", request_id, 0, 0, _random_bits(8))
 
     ihandle = int(handle)
-    notifications_hook = getattr(handle, 'notifications_hook', None)
+    notifications_hook = getattr(handle, "notifications_hook", None)
     _skip_incoming(handle, ihandle, notifications_hook)
     write(ihandle, devnumber, request_data)
 
@@ -466,25 +522,38 @@ def ping(handle, devnumber):
         if reply:
             report_id, reply_devnumber, reply_data = reply
             if reply_devnumber == devnumber:
-                if reply_data[:2] == request_data[:2] and reply_data[4:5] == request_data[-1:]:
+                if (
+                    reply_data[:2] == request_data[:2]
+                    and reply_data[4:5] == request_data[-1:]
+                ):
                     # HID++ 2.0+ device, currently connected
                     return ord(reply_data[2:3]) + ord(reply_data[3:4]) / 10.0
 
-                if report_id == 0x10 and reply_data[:1] == b'\x8F' and reply_data[1:3] == request_data[:2]:
-                    assert reply_data[-1:] == b'\x00'
+                if (
+                    report_id == 0x10
+                    and reply_data[:1] == b"\x8F"
+                    and reply_data[1:3] == request_data[:2]
+                ):
+                    assert reply_data[-1:] == b"\x00"
                     error = ord(reply_data[3:4])
 
-                    if error == _hidpp10.ERROR.invalid_SubID__command:  # a valid reply from a HID++ 1.0 device
+                    if (
+                        error == _hidpp10.ERROR.invalid_SubID__command
+                    ):  # a valid reply from a HID++ 1.0 device
                         return 1.0
 
                     if error == _hidpp10.ERROR.resource_error:  # device unreachable
                         return
 
-                    if error == _hidpp10.ERROR.unknown_device:  # no paired device with that number
+                    if (
+                        error == _hidpp10.ERROR.unknown_device
+                    ):  # no paired device with that number
                         _log.error(
-                            "(%s) device %d error on ping request: unknown device", handle, devnumber)
-                        raise NoSuchDevice(
-                            number=devnumber, request=request_id)
+                            "(%s) device %d error on ping request: unknown device",
+                            handle,
+                            devnumber,
+                        )
+                        raise NoSuchDevice(number=devnumber, request=request_id)
 
             if notifications_hook:
                 n = make_notification(reply_devnumber, reply_data)
@@ -495,6 +564,11 @@ def ping(handle, devnumber):
 
         delta = _timestamp() - request_started
 
-    _log.warn("(%s) timeout (%0.2f/%0.2f) on device %d ping",
-              handle, delta, _PING_TIMEOUT, devnumber)
+    _log.warn(
+        "(%s) timeout (%0.2f/%0.2f) on device %d ping",
+        handle,
+        delta,
+        _PING_TIMEOUT,
+        devnumber,
+    )
     # raise DeviceUnreachable(number=devnumber, request=request_id)

@@ -24,6 +24,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from collections import namedtuple
 from binascii import hexlify as _hexlify
 from struct import pack, unpack
+
 try:
     unicode
     # if Python2, unicode_literals will mess our first (un)pack() argument
@@ -32,7 +33,9 @@ try:
     pack = lambda x, *args: _pack_str(str(x), *args)
     unpack = lambda x, *args: _unpack_str(str(x), *args)
 
-    def is_string(d): return isinstance(d, unicode) or isinstance(d, str)
+    def is_string(d):
+        return isinstance(d, unicode) or isinstance(d, str)
+
     # no easy way to distinguish between b'' and '' :(
     # or (isinstance(d, str) \
     # 	and not any((chr(k) in d for k in range(0x00, 0x1F))) \
@@ -41,7 +44,9 @@ try:
 except:
     # this is certanly Python 3
     # In Py3, unicode and str are equal (the unicode object does not exist)
-    def is_string(d): return isinstance(d, str)
+    def is_string(d):
+        return isinstance(d, str)
+
 
 #
 #
@@ -72,7 +77,7 @@ class NamedInt(int):
             return self.name.lower() == other.lower()
         # this should catch comparisons with bytes in Py3
         if other is not None:
-            raise TypeError('Unsupported type ' + str(type(other)))
+            raise TypeError("Unsupported type " + str(type(other)))
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -82,10 +87,11 @@ class NamedInt(int):
 
     def __str__(self):
         return self.name
+
     __unicode__ = __str__
 
     def __repr__(self):
-        return 'NamedInt(%d, %r)' % (int(self), self.name)
+        return "NamedInt(%d, %r)" % (int(self), self.name)
 
 
 class NamedInts(object):
@@ -101,18 +107,17 @@ class NamedInts(object):
     if the value already exists in the set (int or string), ValueError will be
     raised.
     """
-    __slots__ = ('__dict__', '_values', '_indexed', '_fallback')
+
+    __slots__ = ("__dict__", "_values", "_indexed", "_fallback")
 
     def __init__(self, **kwargs):
         def _readable_name(n):
             if not is_string(n):
-                raise TypeError(
-                    "expected (unicode) string, got " + str(type(n)))
-            return n.replace('__', '/').replace('_', ' ')
+                raise TypeError("expected (unicode) string, got " + str(type(n)))
+            return n.replace("__", "/").replace("_", " ")
 
         # print (repr(kwargs))
-        values = {k: NamedInt(v, _readable_name(k))
-                  for (k, v) in kwargs.items()}
+        values = {k: NamedInt(v, _readable_name(k)) for (k, v) in kwargs.items()}
         self.__dict__ = values
         self._values = sorted(list(values.values()))
         self._indexed = {int(v): v for v in self._values}
@@ -126,20 +131,19 @@ class NamedInts(object):
 
     @classmethod
     def range(cls, from_value, to_value, name_generator=lambda x: str(x), step=1):
-        values = {name_generator(x): x for x in range(
-            from_value, to_value + 1, step)}
+        values = {name_generator(x): x for x in range(from_value, to_value + 1, step)}
         return NamedInts(**values)
 
     def flag_names(self, value):
         unknown_bits = value
         for k in self._indexed:
-            assert bin(k).count('1') == 1
+            assert bin(k).count("1") == 1
             if k & value == k:
                 unknown_bits &= ~k
                 yield str(self._indexed[k])
 
         if unknown_bits:
-            yield 'unknown:%06X' % unknown_bits
+            yield "unknown:%06X" % unknown_bits
 
     def __getitem__(self, index):
         if isinstance(index, int):
@@ -159,12 +163,14 @@ class NamedInts(object):
             if index.start is None and index.stop is None:
                 return self._values[:]
 
-            v_start = int(self._values[0]) if index.start is None else int(
-                index.start)
-            v_stop = (self._values[-1] +
-                      1) if index.stop is None else int(index.stop)
+            v_start = int(self._values[0]) if index.start is None else int(index.start)
+            v_stop = (self._values[-1] + 1) if index.stop is None else int(index.stop)
 
-            if v_start > v_stop or v_start > self._values[-1] or v_stop <= self._values[0]:
+            if (
+                v_start > v_stop
+                or v_start > self._values[-1]
+                or v_stop <= self._values[0]
+            ):
                 return []
 
             if v_start <= self._values[0] and v_stop > self._values[-1]:
@@ -186,17 +192,17 @@ class NamedInts(object):
     def __setitem__(self, index, name):
         assert isinstance(index, int), type(index)
         if isinstance(name, NamedInt):
-            assert int(index) == int(name), repr(index) + ' ' + repr(name)
+            assert int(index) == int(name), repr(index) + " " + repr(name)
             value = name
         elif is_string(name):
             value = NamedInt(index, name)
         else:
-            raise TypeError('name must be a string')
+            raise TypeError("name must be a string")
 
         if str(value) in self.__dict__:
-            raise ValueError('%s (%d) already known' % (value, int(value)))
+            raise ValueError("%s (%d) already known" % (value, int(value)))
         if int(value) in self._indexed:
-            raise ValueError('%d (%s) already known' % (int(value), value))
+            raise ValueError("%d (%s) already known" % (int(value), value))
 
         self._values = sorted(self._values + [value])
         self.__dict__[str(value)] = value
@@ -216,13 +222,13 @@ class NamedInts(object):
         return len(self._values)
 
     def __repr__(self):
-        return 'NamedInts(%s)' % ', '.join(repr(v) for v in self._values)
+        return "NamedInts(%s)" % ", ".join(repr(v) for v in self._values)
 
 
 def strhex(x):
     assert x is not None
     """Produce a hex-string representation of a sequence of bytes."""
-    return _hexlify(x).decode('ascii').upper()
+    return _hexlify(x).decode("ascii").upper()
 
 
 def bytes2int(x):
@@ -231,8 +237,8 @@ def bytes2int(x):
     """
     assert isinstance(x, bytes)
     assert len(x) < 9
-    qx = (b'\x00' * 8) + x
-    result, = unpack('!Q', qx[-8:])
+    qx = (b"\x00" * 8) + x
+    result, = unpack("!Q", qx[-8:])
     # assert x == int2bytes(result, len(x))
     return result
 
@@ -243,12 +249,12 @@ def int2bytes(x, count=None):
     If 'count' is not given, the necessary number of bytes is computed.
     """
     assert isinstance(x, int)
-    result = pack('!Q', x)
+    result = pack("!Q", x)
     assert isinstance(result, bytes)
     # assert x == bytes2int(result)
 
     if count is None:
-        return result.lstrip(b'\x00')
+        return result.lstrip(b"\x00")
 
     assert isinstance(count, int)
     assert count > 0
@@ -272,27 +278,16 @@ class KwException(Exception):
 
 
 """Firmware information."""
-FirmwareInfo = namedtuple('FirmwareInfo', [
-    'kind',
-    'name',
-    'version',
-    'extras'])
+FirmwareInfo = namedtuple("FirmwareInfo", ["kind", "name", "version", "extras"])
 
 """Reprogrammable keys information."""
-ReprogrammableKeyInfo = namedtuple('ReprogrammableKeyInfo', [
-    'index',
-    'key',
-    'task',
-    'flags'])
+ReprogrammableKeyInfo = namedtuple(
+    "ReprogrammableKeyInfo", ["index", "key", "task", "flags"]
+)
 
-ReprogrammableKeyInfoV4 = namedtuple('ReprogrammableKeyInfoV4', [
-    'index',
-    'key',
-    'task',
-    'flags',
-    'pos',
-    'group',
-    'group_mask',
-    'remapped'])
+ReprogrammableKeyInfoV4 = namedtuple(
+    "ReprogrammableKeyInfoV4",
+    ["index", "key", "task", "flags", "pos", "group", "group_mask", "remapped"],
+)
 
 del namedtuple
