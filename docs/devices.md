@@ -8,10 +8,10 @@ layout: page
 **Solaar** will detect all devices paired with your receiver, and at the very
 least display some basic information about them.
 
-At this moment, all [Unifying][unifying] Receiver are supported (devices with
-USB ID `046d:c52b` or `046d:c532`), but only some newer Nano Receiver (devices
-with USB ID `046d:c52f` and `046d:c52b`). You can check your connected Logitech
-devices by running `lsusb -d 046d:` in a console.
+At this moment, all [Unifying][unifying] receivers are supported (devices with
+USB ID `046d:c52b` or `046d:c532`), but only some newer Nano receivers (devices
+with USB ID `046d:c52f`, `046d:c52b`, and `046d:c534`). Note that Linux incorrectly states that
+some Nano receivers are Unifying receivers.
 
 For some devices, extra settings (usually not available through the standard
 Linux system configuration) are supported:
@@ -121,12 +121,12 @@ Mice (Nano):
 | M330       | ?.?   | yes     | ?   | smooth scrolling                 |
 | MX 1100    | 1.0   | yes     | -   | smooth scrolling, side scrolling |
 
-[old]: M185 with P/N: 810-003496
+(old): M185 with P/N: 810-003496
 
-[new]: M185 with P/N: 810-005238
+(new): M185 with P/N: 810-005238 or 810-005232
 
-[note]: Currently, smooth scrolling events does not processed in xfce and this
-setting useful only for disable smooth scrolling
+(note): Currently, smooth scrolling events are not processed in xfce and this
+setting is useful only to disable smooth scrolling.
 
 Mice (Mini):
 
