@@ -37,14 +37,13 @@ from . import configuration
 _log = getLogger(__name__)
 del getLogger
 
-
 #
 #
 #
 
 _GHOST_DEVICE = namedtuple(
-    "_GHOST_DEVICE", ("receiver", "number", "name", "kind", "status", "online")
-)
+    "_GHOST_DEVICE",
+    ("receiver", "number", "name", "kind", "status", "online"))
 _GHOST_DEVICE.__bool__ = lambda self: False
 _GHOST_DEVICE.__nonzero__ = _GHOST_DEVICE.__bool__
 del namedtuple
@@ -75,7 +74,8 @@ class ReceiverListener(_listener.EventsListener):
     """
 
     def __init__(self, receiver, status_changed_callback):
-        super(ReceiverListener, self).__init__(receiver, self._notifications_handler)
+        super(ReceiverListener, self).__init__(receiver,
+                                               self._notifications_handler)
         # no reason to enable polling yet
         # self.tick_period = _POLL_TICK
         # self._last_tick = 0
@@ -92,7 +92,8 @@ class ReceiverListener(_listener.EventsListener):
                 self.receiver.handle,
             )
         notification_flags = self.receiver.enable_notifications()
-        self.receiver.status[_status.KEYS.NOTIFICATION_FLAGS] = notification_flags
+        self.receiver.status[
+            _status.KEYS.NOTIFICATION_FLAGS] = notification_flags
         self.receiver.notify_devices()
         self._status_changed(self.receiver)  # , _status.ALERT.NOTIFICATION)
 
@@ -224,11 +225,8 @@ class ReceiverListener(_listener.EventsListener):
         if n.sub_id == 0x41:
             if not already_known:
                 dev = self.receiver.register_new_device(n.devnumber, n)
-            elif (
-                self.receiver.status.lock_open
-                and self.receiver.re_pairs
-                and not ord(n.data[0:1]) & 0x40
-            ):
+            elif (self.receiver.status.lock_open and self.receiver.re_pairs
+                  and not ord(n.data[0:1]) & 0x40):
                 dev = self.receiver[n.devnumber]
                 # get rid of information on device re-paired away
                 del self.receiver[n.devnumber]
@@ -275,7 +273,8 @@ class ReceiverListener(_listener.EventsListener):
             dev.ping()
 
     def __str__(self):
-        return "<ReceiverListener(%s,%s)>" % (self.receiver.path, self.receiver.handle)
+        return "<ReceiverListener(%s,%s)>" % (self.receiver.path,
+                                              self.receiver.handle)
 
     __unicode__ = __str__
 
@@ -283,7 +282,6 @@ class ReceiverListener(_listener.EventsListener):
 #
 #
 #
-
 
 # all known receiver listeners
 # listeners that stop on their own may remain here

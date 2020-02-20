@@ -33,7 +33,6 @@ from .common import NamedInts as _NamedInts
 _log = getLogger(__name__)
 del getLogger
 
-
 #
 #
 #
@@ -58,14 +57,14 @@ class Setting(object):
     )
 
     def __init__(
-        self,
-        name,
-        rw,
-        validator,
-        kind=None,
-        label=None,
-        description=None,
-        device_kind=None,
+            self,
+            name,
+            rw,
+            validator,
+            kind=None,
+            label=None,
+            description=None,
+            device_kind=None,
     ):
         assert name
         self.name = name
@@ -115,9 +114,8 @@ class Setting(object):
         assert hasattr(self, "_device")
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug(
-                "%s: settings read %r from %s", self.name, self._value, self._device
-            )
+            _log.debug("%s: settings read %r from %s", self.name, self._value,
+                       self._device)
 
         if self._value is None and self._device.persister:
             # We haven't read a value from the device yet,
@@ -147,7 +145,8 @@ class Setting(object):
         assert value is not None
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("%s: settings write %r to %s", self.name, value, self._device)
+            _log.debug("%s: settings write %r to %s", self.name, value,
+                       self._device)
 
         if self._device.online:
             # Remember the value we're trying to set, even if the write fails.
@@ -184,7 +183,8 @@ class Setting(object):
         assert hasattr(self, "_device")
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("%s: apply %s (%s)", self.name, self._value, self._device)
+            _log.debug("%s: apply %s (%s)", self.name, self._value,
+                       self._device)
 
         value = self.read()
         if value is not None:
@@ -215,7 +215,7 @@ class Setting(object):
 
 
 class RegisterRW(object):
-    __slots__ = ("register",)
+    __slots__ = ("register", )
 
     kind = _NamedInt(0x01, "register")
 
@@ -237,9 +237,10 @@ class FeatureRW(object):
     default_read_fnid = 0x00
     default_write_fnid = 0x10
 
-    def __init__(
-        self, feature, read_fnid=default_read_fnid, write_fnid=default_write_fnid
-    ):
+    def __init__(self,
+                 feature,
+                 read_fnid=default_read_fnid,
+                 write_fnid=default_write_fnid):
         assert isinstance(feature, _NamedInt)
         self.feature = feature
         self.read_fnid = read_fnid
@@ -251,7 +252,8 @@ class FeatureRW(object):
 
     def write(self, device, data_bytes):
         assert self.feature is not None
-        return device.feature_request(self.feature, self.write_fnid, data_bytes)
+        return device.feature_request(self.feature, self.write_fnid,
+                                      data_bytes)
 
 
 #
@@ -269,9 +271,10 @@ class BooleanValidator(object):
     # mask specifies all the affected bits in the value
     default_mask = 0xFF
 
-    def __init__(
-        self, true_value=default_true, false_value=default_false, mask=default_mask
-    ):
+    def __init__(self,
+                 true_value=default_true,
+                 false_value=default_false,
+                 mask=default_mask):
         if isinstance(true_value, int):
             assert isinstance(false_value, int)
             if mask is None:
@@ -360,22 +363,24 @@ class BooleanValidator(object):
         if isinstance(self.mask, int):
             if current_value is not None and self.needs_current_value:
                 to_write |= ord(current_value[:1]) & (0xFF ^ self.mask)
-            if current_value is not None and to_write == ord(current_value[:1]):
+            if current_value is not None and to_write == ord(
+                    current_value[:1]):
                 return None
         else:
             to_write = bytearray(to_write)
             count = len(self.mask)
             for i in range(0, count):
-                b = ord(to_write[i : i + 1])
-                m = ord(self.mask[i : i + 1])
+                b = ord(to_write[i:i + 1])
+                m = ord(self.mask[i:i + 1])
                 assert b & m == b
                 # b &= m
                 if current_value is not None and self.needs_current_value:
-                    b |= ord(current_value[i : i + 1]) & (0xFF ^ m)
+                    b |= ord(current_value[i:i + 1]) & (0xFF ^ m)
                 to_write[i] = b
             to_write = bytes(to_write)
 
-            if current_value is not None and to_write == current_value[: len(to_write)]:
+            if current_value is not None and to_write == current_value[:len(
+                    to_write)]:
                 return None
 
         if _log.isEnabledFor(_DEBUG):
@@ -393,7 +398,6 @@ class ChoicesValidator(object):
     __slots__ = ("choices", "flag", "_bytes_count", "needs_current_value")
 
     kind = KIND.choice
-
     """Translates between NamedInts and a byte sequence.
 	:param choices: a list of NamedInts
 	:param bytes_count: the size of the derived byte sequence. If None, it
@@ -414,7 +418,7 @@ class ChoicesValidator(object):
         assert self._bytes_count < 8
 
     def validate_read(self, reply_bytes):
-        reply_value = _bytes2int(reply_bytes[: self._bytes_count])
+        reply_value = _bytes2int(reply_bytes[:self._bytes_count])
         valid_value = self.choices[reply_value]
         assert valid_value is not None, "%s: failed to validate read value %02X" % (
             self.__class__.__name__,
@@ -451,7 +455,6 @@ class RangeValidator(object):
     )
 
     kind = KIND.range
-
     """Translates between integers and a byte sequence.
 	:param min_value: minimum accepted value (inclusive)
 	:param max_value: maximum accepted value (inclusive)
@@ -471,15 +474,13 @@ class RangeValidator(object):
         assert self._bytes_count < 8
 
     def validate_read(self, reply_bytes):
-        reply_value = _bytes2int(reply_bytes[: self._bytes_count])
+        reply_value = _bytes2int(reply_bytes[:self._bytes_count])
         assert reply_value >= self.min_value, (
-            "%s: failed to validate read value %02X"
-            % (self.__class__.__name__, reply_value)
-        )
+            "%s: failed to validate read value %02X" %
+            (self.__class__.__name__, reply_value))
         assert reply_value <= self.max_value, (
-            "%s: failed to validate read value %02X"
-            % (self.__class__.__name__, reply_value)
-        )
+            "%s: failed to validate read value %02X" %
+            (self.__class__.__name__, reply_value))
         return reply_value
 
     def prepare_write(self, new_value, current_value=None):

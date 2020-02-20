@@ -28,7 +28,6 @@ from threading import Thread as _Thread
 _log = getLogger(__name__)
 del getLogger
 
-
 try:
     from Queue import Queue as _Queue
 except ImportError:

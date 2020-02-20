@@ -38,7 +38,6 @@ from .window import toggle as _window_toggle
 _log = getLogger(__name__)
 del getLogger
 
-
 #
 # constants
 #
@@ -66,10 +65,10 @@ def _create_menu(quit_handler):
 
     menu.append(about.create_menu_item())
     menu.append(
-        make(
-            "application-exit", _("Quit"), quit_handler, stock_id=Gtk.STOCK_QUIT
-        ).create_menu_item()
-    )
+        make("application-exit",
+             _("Quit"),
+             quit_handler,
+             stock_id=Gtk.STOCK_QUIT).create_menu_item())
     del about, make
 
     menu.show_all()
@@ -218,10 +217,8 @@ try:
         if _icon.get_status != AppIndicator3.IndicatorStatus.ATTENTION:
             _icon.set_attention_icon_full(_icons.TRAY_ATTENTION, reason or "")
             _icon.set_status(AppIndicator3.IndicatorStatus.ATTENTION)
-            GLib.timeout_add(
-                10 * 1000, _icon.set_status, AppIndicator3.IndicatorStatus.ACTIVE
-            )
-
+            GLib.timeout_add(10 * 1000, _icon.set_status,
+                             AppIndicator3.IndicatorStatus.ACTIVE)
 
 except ImportError:
 
@@ -238,8 +235,7 @@ except ImportError:
         icon.connect(
             "popup-menu",
             lambda icon, button, time: menu.popup(
-                None, None, icon.position_menu, icon, button, time
-            ),
+                None, None, icon.position_menu, icon, button, time),
         )
 
         return icon
@@ -259,9 +255,8 @@ except ImportError:
             tray_icon_name = _icons.battery(battery_level, battery_charging)
         else:
             # there may be a receiver, but no peripherals
-            tray_icon_name = (
-                _icons.TRAY_OKAY if _devices_info else _icons.TRAY_ATTENTION
-            )
+            tray_icon_name = (_icons.TRAY_OKAY
+                              if _devices_info else _icons.TRAY_ATTENTION)
         _icon.set_from_icon_name(tray_icon_name)
 
     def _update_menu_icon(image_widget, icon_name):
@@ -309,7 +304,8 @@ def _generate_tooltip_lines():
                 yield "\t%s <small>(" % p + _("offline") + ")</small>"
         else:
             if status:
-                yield "<b>%s</b> <small>(" % name + _("no status") + ")</small>"
+                yield "<b>%s</b> <small>(" % name + _(
+                    "no status") + ")</small>"
             else:
                 yield "<b>%s</b> <small>(" % name + _("offline") + ")</small>"
         yield ""
@@ -367,17 +363,20 @@ def _add_device(device):
             break
         index = index + 1
 
-    new_device_info = (receiver_path, device.number, device.name, device.status)
+    new_device_info = (receiver_path, device.number, device.name,
+                       device.status)
     assert len(new_device_info) == len(_RECEIVER_SEPARATOR)
     _devices_info.insert(index, new_device_info)
 
     # label_prefix = b'\xE2\x94\x84 '.decode('utf-8')
     label_prefix = "   "
 
-    new_menu_item = Gtk.ImageMenuItem.new_with_label(label_prefix + device.name)
+    new_menu_item = Gtk.ImageMenuItem.new_with_label(label_prefix +
+                                                     device.name)
     new_menu_item.set_image(Gtk.Image())
     new_menu_item.show_all()
-    new_menu_item.connect("activate", _window_popup, receiver_path, device.number)
+    new_menu_item.connect("activate", _window_popup, receiver_path,
+                          device.number)
     _menu.insert(new_menu_item, index)
 
     return index
@@ -406,7 +405,8 @@ def _add_receiver(receiver):
     new_menu_item = Gtk.ImageMenuItem.new_with_label(receiver.name)
     _menu.insert(new_menu_item, index)
     icon_set = _icons.device_icon_set(receiver.name)
-    new_menu_item.set_image(Gtk.Image().new_from_icon_set(icon_set, _MENU_ICON_SIZE))
+    new_menu_item.set_image(Gtk.Image().new_from_icon_set(
+        icon_set, _MENU_ICON_SIZE))
     new_menu_item.show_all()
     new_menu_item.connect("activate", _window_popup, receiver.path)
 
@@ -456,7 +456,6 @@ def _update_menu_item(index, device):
 #
 #
 
-
 # for which device to show the battery info in systray, if more than one
 # it's actually an entry in _devices_info
 _picked_device = None
@@ -500,7 +499,8 @@ def update(device=None):
             receiver_path = device.path
             if is_alive:
                 index = None
-                for idx, (path, _ignore, _ignore, _ignore) in enumerate(_devices_info):
+                for idx, (path, _ignore, _ignore,
+                          _ignore) in enumerate(_devices_info):
                     if path == receiver_path:
                         index = idx
                         break
@@ -515,7 +515,8 @@ def update(device=None):
             is_paired = bool(device)
             receiver_path = device.receiver.path
             index = None
-            for idx, (path, number, _ignore, _ignore) in enumerate(_devices_info):
+            for idx, (path, number, _ignore,
+                      _ignore) in enumerate(_devices_info):
                 if path == receiver_path and number == device.number:
                     index = idx
 
@@ -534,11 +535,8 @@ def update(device=None):
         menu_items[no_receivers_index + 1].set_visible(not _devices_info)
 
     global _picked_device
-    if (
-        (not _picked_device or _last_scroll == 0)
-        and device is not None
-        and device.kind is not None
-    ):
+    if ((not _picked_device or _last_scroll == 0) and device is not None
+            and device.kind is not None):
         # if it's just a receiver update, it's unlikely the picked device would change
         _picked_device = _pick_device_with_lowest_battery()
 

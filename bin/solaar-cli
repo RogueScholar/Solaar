@@ -36,7 +36,9 @@ def init_paths():
 
 
 if __name__ == "__main__":
-    print("WARNING: solaar-cli is deprecated; use solaar with the usual arguments")
+    print(
+        "WARNING: solaar-cli is deprecated; use solaar with the usual arguments"
+    )
     init_paths()
     import solaar.cli
 

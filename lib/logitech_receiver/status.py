@@ -34,16 +34,17 @@ from .i18n import ngettext
 _log = getLogger(__name__)
 del getLogger
 
-
 _R = _hidpp10.REGISTERS
 
 #
 #
 #
 
-ALERT = _NamedInts(
-    NONE=0x00, NOTIFICATION=0x01, SHOW_WINDOW=0x02, ATTENTION=0x04, ALL=0xFF
-)
+ALERT = _NamedInts(NONE=0x00,
+                   NOTIFICATION=0x01,
+                   SHOW_WINDOW=0x02,
+                   ATTENTION=0x04,
+                   ALL=0xFF)
 
 KEYS = _NamedInts(
     BATTERY_LEVEL=1,
@@ -106,14 +107,10 @@ class ReceiverStatus(dict):
 
     def __str__(self):
         count = len(self._receiver)
-        return (
-            _("No paired devices.")
-            if count == 0
-            else ngettext(
-                "%(count)s paired device.", "%(count)s paired devices.", count
-            )
-            % {"count": count}
-        )
+        return (_("No paired devices.") if count == 0 else ngettext(
+            "%(count)s paired device.", "%(count)s paired devices.", count) % {
+                "count": count
+            })
 
     __unicode__ = __str__
 
@@ -166,9 +163,13 @@ class DeviceStatus(dict):
             battery_level = self.get(KEYS.BATTERY_LEVEL)
             if battery_level is not None:
                 if isinstance(battery_level, _NamedInt):
-                    yield _("Battery: %(level)s") % {"level": _(str(battery_level))}
+                    yield _("Battery: %(level)s") % {
+                        "level": _(str(battery_level))
+                    }
                 else:
-                    yield _("Battery: %(percent)d%%") % {"percent": battery_level}
+                    yield _("Battery: %(percent)d%%") % {
+                        "percent": battery_level
+                    }
 
                 battery_status = self.get(KEYS.BATTERY_STATUS)
                 if battery_status is not None:
@@ -185,7 +186,8 @@ class DeviceStatus(dict):
         return "".join(i for i in _items())
 
     def __repr__(self):
-        return "{" + ", ".join("'%s': %r" % (k, v) for k, v in self.items()) + "}"
+        return "{" + ", ".join("'%s': %r" % (k, v)
+                               for k, v in self.items()) + "}"
 
     def __bool__(self):
         return bool(self._active)
@@ -204,8 +206,10 @@ class DeviceStatus(dict):
             assert isinstance(level, int)
 
         # TODO: this is also executed when pressing Fn+F7 on K800.
-        old_level, self[KEYS.BATTERY_LEVEL] = self.get(KEYS.BATTERY_LEVEL), level
-        old_status, self[KEYS.BATTERY_STATUS] = self.get(KEYS.BATTERY_STATUS), status
+        old_level, self[KEYS.BATTERY_LEVEL] = self.get(
+            KEYS.BATTERY_LEVEL), level
+        old_status, self[KEYS.BATTERY_STATUS] = self.get(
+            KEYS.BATTERY_STATUS), status
 
         charging = status in (
             _hidpp20.BATTERY_STATUS.recharging,
@@ -219,12 +223,12 @@ class DeviceStatus(dict):
         changed = old_level != level or old_status != status or old_charging != charging
         alert, reason = ALERT.NONE, None
 
-        if _hidpp20.BATTERY_OK(status) and (
-            level is None or level > _BATTERY_ATTENTION_LEVEL
-        ):
+        if _hidpp20.BATTERY_OK(status) and (level is None or
+                                            level > _BATTERY_ATTENTION_LEVEL):
             self[KEYS.ERROR] = None
         else:
-            _log.warn("%s: battery %d%%, ALERT %s", self._device, level, status)
+            _log.warn("%s: battery %d%%, ALERT %s", self._device, level,
+                      status)
             if self.get(KEYS.ERROR) != status:
                 self[KEYS.ERROR] = status
                 # only show the notification once
@@ -242,10 +246,14 @@ class DeviceStatus(dict):
 
         if changed or reason:
             # update the leds on the device, if any
-            _hidpp10.set_3leds(
-                self._device, level, charging=charging, warning=bool(alert)
-            )
-            self.changed(active=True, alert=alert, reason=reason, timestamp=timestamp)
+            _hidpp10.set_3leds(self._device,
+                               level,
+                               charging=charging,
+                               warning=bool(alert))
+            self.changed(active=True,
+                         alert=alert,
+                         reason=reason,
+                         timestamp=timestamp)
 
     def read_battery(self, timestamp=None):
         if self._active:
@@ -273,7 +281,11 @@ class DeviceStatus(dict):
                 self[KEYS.BATTERY_CHARGING] = None
                 self.changed()
 
-    def changed(self, active=None, alert=ALERT.NONE, reason=None, timestamp=None):
+    def changed(self,
+                active=None,
+                alert=ALERT.NONE,
+                reason=None,
+                timestamp=None):
         assert self._changed_callback
         d = self._device
         # assert d  # may be invalid when processing the 'unpaired' notification
@@ -288,7 +300,8 @@ class DeviceStatus(dict):
                     # get cleared when the device is turned off (but not when the device
                     # goes idle, and we can't tell the difference right now).
                     if d.protocol < 2.0:
-                        self[KEYS.NOTIFICATION_FLAGS] = d.enable_notifications()
+                        self[KEYS.NOTIFICATION_FLAGS] = d.enable_notifications(
+                        )
 
                     # If we've been inactive for a long time, forget anything
                     # about the battery.

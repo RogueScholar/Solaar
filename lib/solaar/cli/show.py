@@ -41,29 +41,25 @@ def _print_receiver(receiver):
         "paired device(s) out of a maximum of %d." % receiver.max_devices,
     )
     if receiver.remaining_pairings() and receiver.remaining_pairings() >= 0:
-        print(
-            "  Has %d successful pairing(s) remaining." % receiver.remaining_pairings()
-        )
+        print("  Has %d successful pairing(s) remaining." %
+              receiver.remaining_pairings())
 
     notification_flags = _hidpp10.get_notification_flags(receiver)
     if notification_flags is not None:
         if notification_flags:
             notification_names = _hidpp10.NOTIFICATION_FLAG.flag_names(
-                notification_flags
-            )
-            print(
-                "  Notifications: %s (0x%06X)"
-                % (", ".join(notification_names), notification_flags)
-            )
+                notification_flags)
+            print("  Notifications: %s (0x%06X)" %
+                  (", ".join(notification_names), notification_flags))
         else:
             print("  Notifications: (none)")
 
     activity = receiver.read_register(_hidpp10.REGISTERS.devices_activity)
     if activity:
-        activity = [
-            (d, ord(activity[d - 1 : d])) for d in range(1, receiver.max_devices)
-        ]
-        activity_text = ", ".join(("%d=%d" % (d, a)) for d, a in activity if a > 0)
+        activity = [(d, ord(activity[d - 1:d]))
+                    for d in range(1, receiver.max_devices)]
+        activity_text = ", ".join(
+            ("%d=%d" % (d, a)) for d, a in activity if a > 0)
         print("  Device activity counters:", activity_text or "(empty)")
 
 
@@ -91,19 +87,17 @@ def _print_device(dev):
         print("       %11s:" % fw.kind, (fw.name + " " + fw.version).strip())
 
     if dev.power_switch_location:
-        print("     The power switch is located on the %s." % dev.power_switch_location)
+        print("     The power switch is located on the %s." %
+              dev.power_switch_location)
 
     if dev.online:
         notification_flags = _hidpp10.get_notification_flags(dev)
         if notification_flags is not None:
             if notification_flags:
                 notification_names = _hidpp10.NOTIFICATION_FLAG.flag_names(
-                    notification_flags
-                )
-                print(
-                    "     Notifications: %s (0x%06X)."
-                    % (", ".join(notification_names), notification_flags)
-                )
+                    notification_flags)
+                print("     Notifications: %s (0x%06X)." %
+                      (", ".join(notification_names), notification_flags))
             else:
                 print("     Notifications: (none).")
 
@@ -114,10 +108,8 @@ def _print_device(dev):
             flags = dev.request(0x0000, feature.bytes(2))
             flags = 0 if flags is None else ord(flags[1:2])
             flags = _hidpp20.FEATURE_FLAG.flag_names(flags)
-            print(
-                "        %2d: %-22s {%04X}   %s"
-                % (index, feature, feature, ", ".join(flags))
-            )
+            print("        %2d: %-22s {%04X}   %s" %
+                  (index, feature, feature, ", ".join(flags)))
             if feature == _hidpp20.FEATURE.HIRES_WHEEL:
                 wheel = _hidpp20.get_hires_wheel(dev)
                 if wheel:
@@ -147,9 +139,8 @@ def _print_device(dev):
                 mouse_pointer = _hidpp20.get_mouse_pointer_info(dev)
                 if mouse_pointer:
                     print("            DPI: %s" % mouse_pointer["dpi"])
-                    print(
-                        "            Acceleration: %s" % mouse_pointer["acceleration"]
-                    )
+                    print("            Acceleration: %s" %
+                          mouse_pointer["acceleration"])
                     if mouse_pointer["suggest_os_ballistics"]:
                         print("            Use OS ballistics")
                     else:
@@ -159,20 +150,15 @@ def _print_device(dev):
                     else:
                         print("            No vertical tuning, standard mice")
             if feature == _hidpp20.FEATURE.VERTICAL_SCROLLING:
-                vertical_scrolling_info = _hidpp20.get_vertical_scrolling_info(dev)
+                vertical_scrolling_info = _hidpp20.get_vertical_scrolling_info(
+                    dev)
                 if vertical_scrolling_info:
-                    print(
-                        "            Roller type: %s"
-                        % vertical_scrolling_info["roller"]
-                    )
-                    print(
-                        "            Ratchet per turn: %s"
-                        % vertical_scrolling_info["ratchet"]
-                    )
-                    print(
-                        "            Scroll lines: %s"
-                        % vertical_scrolling_info["lines"]
-                    )
+                    print("            Roller type: %s" %
+                          vertical_scrolling_info["roller"])
+                    print("            Ratchet per turn: %s" %
+                          vertical_scrolling_info["ratchet"])
+                    print("            Scroll lines: %s" %
+                          vertical_scrolling_info["lines"])
             if feature == _hidpp20.FEATURE.HI_RES_SCROLLING:
                 (
                     scrolling_mode,
@@ -183,10 +169,8 @@ def _print_device(dev):
                 else:
                     print("            Hi-res scrolling disabled")
                 if scrolling_resolution:
-                    print(
-                        "            Hi-res scrolling multiplier: %s"
-                        % scrolling_resolution
-                    )
+                    print("            Hi-res scrolling multiplier: %s" %
+                          scrolling_resolution)
             if feature == _hidpp20.FEATURE.POINTER_SPEED:
                 pointer_speed = _hidpp20.get_pointer_speed_info(dev)
                 if pointer_speed:
@@ -202,19 +186,13 @@ def _print_device(dev):
             flags = _special_keys.KEY_FLAG.flag_names(k.flags)
             # TODO: add here additional variants for other REPROG_CONTROLS
             if dev.keys.keyversion == 1:
-                print(
-                    "        %2d: %-26s => %-27s   %s"
-                    % (k.index, k.key, k.task, ", ".join(flags))
-                )
+                print("        %2d: %-26s => %-27s   %s" %
+                      (k.index, k.key, k.task, ", ".join(flags)))
             if dev.keys.keyversion == 4:
-                print(
-                    "        %2d: %-26s, default: %-27s => %-26s"
-                    % (k.index, k.key, k.task, k.remapped)
-                )
-                print(
-                    "             %s, pos:%d, group:%1d, gmask:%d"
-                    % (", ".join(flags), k.pos, k.group, k.group_mask)
-                )
+                print("        %2d: %-26s, default: %-27s => %-26s" %
+                      (k.index, k.key, k.task, k.remapped))
+                print("             %s, pos:%d, group:%1d, gmask:%d" %
+                      (", ".join(flags), k.pos, k.group, k.group_mask))
     if dev.online:
         battery = _hidpp20.get_battery(dev)
         if battery is None:
@@ -241,10 +219,8 @@ def _print_device(dev):
                     charge_lvl,
                     charge_type,
                 ) = battery_voltage
-                print(
-                    "     Battery: %smV, %s."
-                    % (voltage, "Charging" if charging else "Discharging")
-                )
+                print("     Battery: %smV, %s." %
+                      (voltage, "Charging" if charging else "Discharging"))
             else:
                 print("     Battery status unavailable.")
     else:

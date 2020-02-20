@@ -30,7 +30,6 @@ from solaar import NAME
 _log = getLogger(__name__)
 del getLogger
 
-
 #
 #
 #
@@ -40,24 +39,25 @@ def _create_parser():
     parser = _argparse.ArgumentParser(
         prog=NAME.lower(),
         add_help=False,
-        epilog="For details on individual actions, run `%s <action> --help`."
-        % NAME.lower(),
+        epilog="For details on individual actions, run `%s <action> --help`." %
+        NAME.lower(),
     )
-    subparsers = parser.add_subparsers(
-        title="actions", help="optional action to perform"
-    )
+    subparsers = parser.add_subparsers(title="actions",
+                                       help="optional action to perform")
 
     sp = subparsers.add_parser("show", help="show information about devices")
     sp.add_argument(
         "device",
         nargs="?",
         default="all",
-        help="device to show information about; may be a device number (1..6), a serial, "
+        help=
+        "device to show information about; may be a device number (1..6), a serial, "
         'a substring of a device\'s name, or "all" (the default)',
     )
     sp.set_defaults(action="show")
 
-    sp = subparsers.add_parser("probe", help="probe a receiver (debugging use only)")
+    sp = subparsers.add_parser("probe",
+                               help="probe a receiver (debugging use only)")
     sp.add_argument(
         "receiver",
         nargs="?",
@@ -72,7 +72,8 @@ def _create_parser():
     )
     sp.add_argument(
         "device",
-        help="device to configure; may be a device number (1..6), a device serial, "
+        help=
+        "device to configure; may be a device number (1..6), a device serial, "
         "or at least 3 characters of a device's name",
     )
     sp.add_argument(
@@ -86,7 +87,8 @@ def _create_parser():
     sp = subparsers.add_parser(
         "pair",
         help="pair a new device",
-        epilog="The Logitech Unifying Receiver supports up to 6 paired devices at the same time.",
+        epilog=
+        "The Logitech Unifying Receiver supports up to 6 paired devices at the same time.",
     )
     sp.add_argument(
         "receiver",
@@ -133,9 +135,8 @@ def _find_receiver(receivers, name):
     assert name
 
     for r in receivers:
-        if name in r.name.lower() or (
-            r.serial is not None and name == r.serial.lower()
-        ):
+        if name in r.name.lower() or (r.serial is not None
+                                      and name == r.serial.lower()):
             return r
 
 
@@ -161,12 +162,9 @@ def _find_device(receivers, name):
                 return dev
 
         for dev in r:
-            if (
-                name == dev.serial.lower()
-                or name == dev.codename.lower()
-                or name == str(dev.kind).lower()
-                or name in dev.name.lower()
-            ):
+            if (name == dev.serial.lower() or name == dev.codename.lower()
+                    or name == str(dev.kind).lower()
+                    or name in dev.name.lower()):
                 return dev
 
     raise Exception("no device found matching '%s'" % name)
@@ -200,8 +198,7 @@ def run(cli_args=None, hidraw_path=None):
         from traceback import extract_tb
 
         tb_last = extract_tb(_sys.exc_info()[2])[-1]
-        _sys.exit(
-            "%s: assertion failed: %s line %d" % (NAME.lower(), tb_last[0], tb_last[1])
-        )
+        _sys.exit("%s: assertion failed: %s line %d" %
+                  (NAME.lower(), tb_last[0], tb_last[1]))
     except Exception as e:
         _sys.exit("%s: error: %s" % (NAME.lower(), e))

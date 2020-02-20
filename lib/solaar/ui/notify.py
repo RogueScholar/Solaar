@@ -92,11 +92,8 @@ if available:
 
             # we need to use the filename here because the notifications daemon
             # is an external application that does not know about our icon sets
-            icon_file = (
-                _icons.icon_file(NAME.lower())
-                if icon is None
-                else _icons.icon_file(icon)
-            )
+            icon_file = (_icons.icon_file(NAME.lower())
+                         if icon is None else _icons.icon_file(icon))
 
             n.update(NAME, reason, icon_file)
             n.set_urgency(Notify.Urgency.NORMAL)
@@ -129,11 +126,8 @@ if available:
 
             # we need to use the filename here because the notifications daemon
             # is an external application that does not know about our icon sets
-            icon_file = (
-                _icons.device_icon_file(dev.name, dev.kind)
-                if icon is None
-                else _icons.icon_file(icon)
-            )
+            icon_file = (_icons.device_icon_file(dev.name, dev.kind)
+                         if icon is None else _icons.icon_file(icon))
 
             n.update(summary, message, icon_file)
             urgency = Notify.Urgency.LOW if dev.status else Notify.Urgency.NORMAL
@@ -145,7 +139,6 @@ if available:
                 n.show()
             except Exception:
                 _log.exception("showing %s", n)
-
 
 else:
 

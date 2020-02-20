@@ -29,10 +29,8 @@ _log = getLogger(__name__)
 del getLogger
 
 _XDG_CONFIG_HOME = _os.environ.get("XDG_CONFIG_HOME") or _path.expanduser(
-    _path.join("~", ".config")
-)
+    _path.join("~", ".config"))
 _file_path = _path.join(_XDG_CONFIG_HOME, "solaar", "config.json")
-
 
 _KEY_VERSION = "_version"
 _KEY_NAME = "_name"
@@ -77,9 +75,11 @@ def save():
 
     try:
         with open(_file_path, "w") as config_file:
-            _json_save(
-                _configuration, config_file, skipkeys=True, indent=2, sort_keys=True
-            )
+            _json_save(_configuration,
+                       config_file,
+                       skipkeys=True,
+                       indent=2,
+                       sort_keys=True)
 
         if _log.isEnabledFor(_INFO):
             _log.info("saved %s to %s", _configuration, _file_path)

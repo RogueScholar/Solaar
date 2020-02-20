@@ -35,7 +35,6 @@ from . import window
 _log = getLogger(__name__)
 del getLogger
 
-
 #
 #
 #
@@ -54,34 +53,25 @@ def _error_dialog(reason, object):
 
     if reason == "permissions":
         title = _("Permissions error")
-        text = (
-            _("Found a Logitech Receiver (%s), but did not have permission to open it.")
-            % object
-            + "\n\n"
-            + _(
-                "If you've just installed Solaar, try removing the receiver and plugging it back in."
-            )
-        )
+        text = (_(
+            "Found a Logitech Receiver (%s), but did not have permission to open it."
+        ) % object + "\n\n" + _(
+            "If you've just installed Solaar, try removing the receiver and plugging it back in."
+        ))
     elif reason == "unpair":
         title = _("Unpairing failed")
-        text = (
-            _("Failed to unpair %{device} from %{receiver}.").format(
-                device=object.name, receiver=object.receiver.name
-            )
-            + "\n\n"
-            + _("The receiver returned an error, with no further details.")
-        )
+        text = (_("Failed to unpair %{device} from %{receiver}.").format(
+            device=object.name, receiver=object.receiver.name) + "\n\n" +
+                _("The receiver returned an error, with no further details."))
     else:
-        raise Exception(
-            "ui.error_dialog: don't know how to handle (%s, %s)", reason, object
-        )
+        raise Exception("ui.error_dialog: don't know how to handle (%s, %s)",
+                        reason, object)
 
     assert title
     assert text
 
-    m = Gtk.MessageDialog(
-        None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text
-    )
+    m = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR,
+                          Gtk.ButtonsType.CLOSE, text)
     m.set_title(title)
     m.run()
     m.destroy()
@@ -95,7 +85,6 @@ def error_dialog(reason, object):
 #
 #
 #
-
 
 _task_runner = None
 
@@ -172,7 +161,8 @@ def run_loop(startup_hook, shutdown_hook, use_tray, show_window, args=None):
 
     application.connect(
         "startup",
-        lambda app, startup_hook: _startup(app, startup_hook, use_tray, show_window),
+        lambda app, startup_hook: _startup(app, startup_hook, use_tray,
+                                           show_window),
         startup_hook,
     )
     application.connect("command-line", _command_line)

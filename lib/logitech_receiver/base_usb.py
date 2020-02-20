@@ -22,7 +22,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 _DRIVER = ("hid-generic", "generic-usb", "logitech-djreceiver")
 
 # max_devices is only used for receivers that do not support reading from _R.receiver_info offset 0x03, default to 1
@@ -113,7 +112,6 @@ LIGHTSPEED_RECEIVER_C53a = _lightspeed_receiver(0xC53A)
 LIGHTSPEED_RECEIVER_C53f = _lightspeed_receiver(0xC53F)
 
 del _DRIVER, _unifying_receiver, _nano_receiver, _lenovo_receiver, _lightspeed_receiver
-
 
 ALL = (
     UNIFYING_RECEIVER_C52B,

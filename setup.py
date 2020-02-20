@@ -19,19 +19,16 @@ sys.path[0] = backup_path_0
 
 if "install" in sys.argv:
     # naively guess where the autostart .desktop file should be installed
-    if (
-        "--prefix" in sys.argv
-        or any(x.startswith("--prefix=") for x in sys.argv)
-        or "--home" in sys.argv
-    ):
+    if ("--prefix" in sys.argv
+            or any(x.startswith("--prefix=") for x in sys.argv)
+            or "--home" in sys.argv):
         autostart_path = "etc/xdg/autostart"
     elif "--user" in sys.argv:
         from os import environ
         from os import path
 
         xdg_config_home = environ.get(
-            "XDG_CONFIG_HOME", path.expanduser(path.join("~", ".config"))
-        )
+            "XDG_CONFIG_HOME", path.expanduser(path.join("~", ".config")))
         autostart_path = path.join(xdg_config_home, "autostart")
         del environ, path, xdg_config_home
 
@@ -43,7 +40,9 @@ def _data_files():
 
     yield "share/solaar/icons", _glob("share/solaar/icons/solaar*.svg")
     yield "share/solaar/icons", _glob("share/solaar/icons/light_*.png")
-    yield "share/icons/hicolor/scalable/apps", ["share/solaar/icons/solaar.svg"]
+    yield "share/icons/hicolor/scalable/apps", [
+        "share/solaar/icons/solaar.svg"
+    ]
 
     for mo in _glob("share/locale/*/LC_MESSAGES/solaar.mo"):
         yield _dirname(mo), [mo]
@@ -84,9 +83,13 @@ battery status.
     #        gir1.2-gtk-3.0 gir1.2-notify-0.7 gir1.2-appindicator3-0.1
     # os_requires=['gi.repository.GObject (>= 2.0)', 'gi.repository.Gtk (>= 3.0)'],
     python_requires=">=3.2",
-    install_requires=["pyudev (>= 0.13)",],
+    install_requires=[
+        "pyudev (>= 0.13)",
+    ],
     package_dir={"": "lib"},
-    packages=["hidapi", "logitech_receiver", "solaar", "solaar.ui", "solaar.cli"],
+    packages=[
+        "hidapi", "logitech_receiver", "solaar", "solaar.ui", "solaar.cli"
+    ],
     data_files=list(_data_files()),
     scripts=_glob("bin/*"),
 )
