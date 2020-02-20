@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,21 +15,31 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from logging import DEBUG as _DEBUG
+from logging import getLogger
 
-from .about import show_window as _show_about_window
-from . import action as _action, icons as _icons
-from . import config_panel as _config_panel
-from logitech_receiver.status import KEYS as _K
-from logitech_receiver.common import NamedInts as _NamedInts, NamedInt as _NamedInt
-from logitech_receiver import hidpp10 as _hidpp10
-from solaar.ui import ui_async as _ui_async
-from solaar.i18n import _, ngettext
-from solaar import NAME
+from gi.repository import Gdk
+from gi.repository import GLib
+from gi.repository import Gtk
 from gi.repository.GObject import TYPE_PYOBJECT
-from gi.repository import Gtk, Gdk, GLib
-from logging import getLogger, DEBUG as _DEBUG
+from logitech_receiver import hidpp10 as _hidpp10
+from logitech_receiver.common import NamedInt as _NamedInt
+from logitech_receiver.common import NamedInts as _NamedInts
+from logitech_receiver.status import KEYS as _K
+from solaar import NAME
+from solaar.i18n import _
+from solaar.i18n import ngettext
+from solaar.ui import ui_async as _ui_async
+
+from . import action as _action
+from . import config_panel as _config_panel
+from . import icons as _icons
+from .about import show_window as _show_about_window
 
 _log = getLogger(__name__)
 del getLogger

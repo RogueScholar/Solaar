@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,22 +15,23 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 # Logitech Unifying Receiver API.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from logging import DEBUG as _DEBUG
+from logging import getLogger
 
 from . import special_keys
-from .common import (
-    FirmwareInfo as _FirmwareInfo,
-    ReprogrammableKeyInfo as _ReprogrammableKeyInfo,
-    ReprogrammableKeyInfoV4 as _ReprogrammableKeyInfoV4,
-    KwException as _KwException,
-    NamedInts as _NamedInts,
-    pack as _pack,
-    unpack as _unpack,
-)
-from logging import getLogger, DEBUG as _DEBUG
+from .common import FirmwareInfo as _FirmwareInfo
+from .common import KwException as _KwException
+from .common import NamedInts as _NamedInts
+from .common import pack as _pack
+from .common import ReprogrammableKeyInfo as _ReprogrammableKeyInfo
+from .common import ReprogrammableKeyInfoV4 as _ReprogrammableKeyInfoV4
+from .common import unpack as _unpack
 
 _log = getLogger(__name__)
 del getLogger

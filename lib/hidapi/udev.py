@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,7 +15,6 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 """Generic Human Interface Device API.
 
 It is currently a partial pure-Python implementation of the native HID API
@@ -25,16 +23,21 @@ implemented by signal11 (https://github.com/signal11/hidapi), and requires
 The docstrings are mostly copied from the hidapi API header, with changes where
 necessary.
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from collections import namedtuple
-import os as _os
 import errno as _errno
-from time import sleep
+import os as _os
+from collections import namedtuple
 from select import select as _select
-from pyudev import Context as _Context, Monitor as _Monitor, Device as _Device
+from time import sleep
+
+from pyudev import Context as _Context
+from pyudev import Device as _Device
 from pyudev import DeviceNotFoundError
+from pyudev import Monitor as _Monitor
 
 
 native_implementation = "udev"

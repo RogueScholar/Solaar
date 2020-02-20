@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,18 +15,20 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from .common import (
-    NamedInt as _NamedInt,
-    NamedInts as _NamedInts,
-    bytes2int as _bytes2int,
-    int2bytes as _int2bytes,
-)
 import math
 from copy import copy as _copy
-from logging import getLogger, DEBUG as _DEBUG
+from logging import DEBUG as _DEBUG
+from logging import getLogger
+
+from .common import bytes2int as _bytes2int
+from .common import int2bytes as _int2bytes
+from .common import NamedInt as _NamedInt
+from .common import NamedInts as _NamedInts
 
 _log = getLogger(__name__)
 del getLogger

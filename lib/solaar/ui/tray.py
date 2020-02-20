@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,18 +15,25 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from .window import popup as _window_popup, toggle as _window_toggle
-from . import icons as _icons
-from logitech_receiver.status import KEYS as _K
-from solaar.i18n import _
-from solaar import NAME
-from gi.repository.Gdk import ScrollDirection
-from gi.repository import Gtk, GLib
+from logging import DEBUG as _DEBUG
+from logging import getLogger
 from time import time as _timestamp
-from logging import getLogger, DEBUG as _DEBUG
+
+from gi.repository import GLib
+from gi.repository import Gtk
+from gi.repository.Gdk import ScrollDirection
+from logitech_receiver.status import KEYS as _K
+from solaar import NAME
+from solaar.i18n import _
+
+from . import icons as _icons
+from .window import popup as _window_popup
+from .window import toggle as _window_toggle
 
 _log = getLogger(__name__)
 del getLogger

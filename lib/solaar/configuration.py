@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,13 +15,15 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-from solaar import __version__
 import os as _os
 import os.path as _path
-from json import load as _json_load, dump as _json_save
+from json import dump as _json_save
+from json import load as _json_load
+from logging import DEBUG as _DEBUG
+from logging import getLogger
+from logging import INFO as _INFO
 
-from logging import getLogger, DEBUG as _DEBUG, INFO as _INFO
+from solaar import __version__
 
 _log = getLogger(__name__)
 del getLogger

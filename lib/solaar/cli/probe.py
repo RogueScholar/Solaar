@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2020
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,21 +15,19 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-
-from solaar.cli.show import _print_receiver
 from time import time as _timestamp
 
+from logitech_receiver import base as _base
+from logitech_receiver import hidpp10 as _hidpp10
+from logitech_receiver import notifications as _notifications
+from logitech_receiver import status as _status
 from logitech_receiver.common import strhex as _strhex
-
-from logitech_receiver import (
-    base as _base,
-    hidpp10 as _hidpp10,
-    status as _status,
-    notifications as _notifications,
-)
+from solaar.cli.show import _print_receiver
 
 _R = _hidpp10.REGISTERS
 

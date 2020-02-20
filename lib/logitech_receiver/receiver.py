@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,20 +15,23 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from .base_usb import product_information as _product_information
-from .settings_templates import check_feature_settings as _check_feature_settings
-from .descriptors import DEVICES as _DESCRIPTORS
-from .common import strhex as _strhex
-from . import hidpp20 as _hidpp20
-from . import hidpp10 as _hidpp10
-from . import base as _base
-from .i18n import _
 import errno as _errno
+from logging import getLogger
+from logging import INFO as _INFO
 
-from logging import getLogger, INFO as _INFO
+from . import base as _base
+from . import hidpp10 as _hidpp10
+from . import hidpp20 as _hidpp20
+from .base_usb import product_information as _product_information
+from .common import strhex as _strhex
+from .descriptors import DEVICES as _DESCRIPTORS
+from .i18n import _
+from .settings_templates import check_feature_settings as _check_feature_settings
 
 _log = getLogger(__name__)
 del getLogger

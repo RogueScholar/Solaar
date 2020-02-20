@@ -1,6 +1,5 @@
 # -*- python-mode -*-
 # -*- coding: UTF-8 -*-
-
 # Copyright (C) 2012-2013  Daniel Pavel
 ##
 # This program is free software; you can redistribute it and/or modify
@@ -16,19 +15,21 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-
-from .common import NamedInts as _NamedInts
-from .hidpp10 import REGISTERS as _R, DEVICE_KIND as _DK
-from .settings_templates import RegisterSettings as _RS, FeatureSettings as _FS
-
-#
-#
-#
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from collections import namedtuple
+
+from .common import NamedInts as _NamedInts
+from .hidpp10 import DEVICE_KIND as _DK
+from .hidpp10 import REGISTERS as _R
+from .settings_templates import FeatureSettings as _FS
+from .settings_templates import RegisterSettings as _RS
+#
+#
+#
 
 _DeviceDescriptor = namedtuple(
     "_DeviceDescriptor",
