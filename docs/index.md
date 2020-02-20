@@ -4,7 +4,7 @@ layout: default
 ---
 
 **Solaar** is a Linux manager for Logitech's devices that connect via a USB
-[Unifying][unifying], Lightspeed, or Nano receiver.  
+[Unifying][unifying], Lightspeed, or Nano receiver.
 Solaar does not work with Logitech peripherals that use Bluetooth or peripherals
 from other companies.
 
@@ -20,7 +20,7 @@ command-line interface use the help option, as in `solaar --help`.
 
 Solaar is able to pair and unpair devices with receivers as supported by the
 receiver. Solaar can also control some of the changeable features of devices,
-such as smooth scrolling or function key behavior.  
+such as smooth scrolling or function key behavior.
 For more information on the capabilities of Solaar see
 [docs/capabilities.md](https://pwr-solaar.github.io/Solaar/capabilities).
 
