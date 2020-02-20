@@ -29,6 +29,7 @@ from . import hidpp10 as _hidpp10
 from .common import strhex as _strhex, unpack as _unpack
 from .i18n import _
 from logging import getLogger, DEBUG as _DEBUG, INFO as _INFO
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -45,7 +46,7 @@ def process(device, notification):
     assert device
     assert notification
 
-    assert hasattr(device, 'status')
+    assert hasattr(device, "status")
     status = device.status
     assert status is not None
 
@@ -53,6 +54,7 @@ def process(device, notification):
         return _process_receiver_notification(device, status, notification)
 
     return _process_device_notification(device, status, notification)
+
 
 #
 #
@@ -66,8 +68,11 @@ def _process_receiver_notification(receiver, status, n):
     # pairing lock notification
     if n.sub_id == 0x4A:
         status.lock_open = bool(n.address & 0x01)
-        reason = (_("pairing lock is open")
-                  if status.lock_open else _("pairing lock is closed"))
+        reason = (
+            _("pairing lock is open")
+            if status.lock_open
+            else _("pairing lock is closed")
+        )
         if _log.isEnabledFor(_INFO):
             _log.info("%s: %s", receiver, reason)
 
@@ -85,6 +90,7 @@ def _process_receiver_notification(receiver, status, n):
         return True
 
     _log.warn("%s: unhandled notification %s", receiver, n)
+
 
 #
 #
@@ -117,7 +123,8 @@ def _process_device_notification(device, status, n):
         feature = device.features[n.sub_id]
     except IndexError:
         _log.warn(
-            "%s: notification from invalid feature index %02X: %s", device, n.sub_id, n)
+            "%s: notification from invalid feature index %02X: %s", device, n.sub_id, n
+        )
         return False
 
     return _process_feature_notification(device, status, n, feature)
@@ -149,12 +156,11 @@ def _process_dj_notification(device, status, n):
 
 def _process_hidpp10_custom_notification(device, status, n):
     if _log.isEnabledFor(_DEBUG):
-        _log.debug("%s (%s) custom notification %s",
-                   device, device.protocol, n)
+        _log.debug("%s (%s) custom notification %s", device, device.protocol, n)
 
     if n.sub_id in (_R.battery_status, _R.battery_charge):
         # message layout: 10 ix <register> <xx> <yy> <zz> <00>
-        assert n.data[-1:] == b'\x00'
+        assert n.data[-1:] == b"\x00"
         data = chr(n.address).encode() + n.data
         charge, status_text = _hidpp10.parse_battery_status(n.sub_id, data)
         status.set_battery_info(charge, status_text)
@@ -180,32 +186,44 @@ def _process_hidpp10_notification(device, status, n):
             device.status = None
             if device.number in device.receiver:
                 del device.receiver[device.number]
-            status.changed(active=False, alert=_ALERT.ALL,
-                           reason=_("unpaired"))
+            status.changed(active=False, alert=_ALERT.ALL, reason=_("unpaired"))
         else:
-            _log.warn("%s: disconnection with unknown type %02X: %s",
-                      device, n.address, n)
+            _log.warn(
+                "%s: disconnection with unknown type %02X: %s", device, n.address, n
+            )
         return True
 
     # wireless link notification
     if n.sub_id == 0x41:
-        protocol_name = ('Bluetooth' if n.address == 0x01
-                         else '27 MHz' if n.address == 0x02
-                         else 'QUAD or eQUAD' if n.address == 0x03
-                         else 'eQUAD step 4 DJ' if n.address == 0x04
-                         else 'DFU Lite' if n.address == 0x05
-                         else 'eQUAD step 4 Lite' if n.address == 0x06
-                         else 'eQUAD step 4 Gaming' if n.address == 0x07
-                         else 'eQUAD step 4 for gamepads' if n.address == 0x08
-                         else 'eQUAD nano Lite' if n.address == 0x0A
-                         else 'Lightspeed 1' if n.address == 0x0C
-                         else 'Lightspeed 1_1' if n.address == 0x0D
-                         else None)
+        protocol_name = (
+            "Bluetooth"
+            if n.address == 0x01
+            else "27 MHz"
+            if n.address == 0x02
+            else "QUAD or eQUAD"
+            if n.address == 0x03
+            else "eQUAD step 4 DJ"
+            if n.address == 0x04
+            else "DFU Lite"
+            if n.address == 0x05
+            else "eQUAD step 4 Lite"
+            if n.address == 0x06
+            else "eQUAD step 4 Gaming"
+            if n.address == 0x07
+            else "eQUAD step 4 for gamepads"
+            if n.address == 0x08
+            else "eQUAD nano Lite"
+            if n.address == 0x0A
+            else "Lightspeed 1"
+            if n.address == 0x0C
+            else "Lightspeed 1_1"
+            if n.address == 0x0D
+            else None
+        )
         if protocol_name:
             if _log.isEnabledFor(_DEBUG):
                 wpid = _strhex(n.data[2:3] + n.data[1:2])
-                assert wpid == device.wpid, "%s wpid mismatch, got %s" % (
-                    device, wpid)
+                assert wpid == device.wpid, "%s wpid mismatch, got %s" % (device, wpid)
 
             flags = ord(n.data[:1]) & 0xF0
             link_encrypted = bool(flags & 0x20)
@@ -213,13 +231,24 @@ def _process_hidpp10_notification(device, status, n):
             if _log.isEnabledFor(_DEBUG):
                 sw_present = bool(flags & 0x10)
                 has_payload = bool(flags & 0x80)
-                _log.debug("%s: %s connection notification: software=%s, encrypted=%s, link=%s, payload=%s",
-                           device, protocol_name, sw_present, link_encrypted, link_established, has_payload)
+                _log.debug(
+                    "%s: %s connection notification: software=%s, encrypted=%s, link=%s, payload=%s",
+                    device,
+                    protocol_name,
+                    sw_present,
+                    link_encrypted,
+                    link_established,
+                    has_payload,
+                )
             status[_K.LINK_ENCRYPTED] = link_encrypted
             status.changed(active=link_established)
         else:
-            _log.warn("%s: connection notification with unknown protocol %02X: %s",
-                      device.number, n.address, n)
+            _log.warn(
+                "%s: connection notification with unknown protocol %02X: %s",
+                device.number,
+                n.address,
+                n,
+            )
 
         return True
 
@@ -236,8 +265,7 @@ def _process_hidpp10_notification(device, status, n):
             if _log.isEnabledFor(_DEBUG):
                 _log.debug("%s: device powered on", device)
             reason = status.to_string() or _("powered on")
-            status.changed(
-                active=True, alert=_ALERT.NOTIFICATION, reason=reason)
+            status.changed(active=True, alert=_ALERT.NOTIFICATION, reason=reason)
         else:
             _log.warn("%s: unknown %s", device, n)
         return True
@@ -253,7 +281,8 @@ def _process_feature_notification(device, status, n, feature):
             discharge_next_level = ord(n.data[1:2])
             battery_status = ord(n.data[2:3])
             status.set_battery_info(
-                discharge_level, _hidpp20.BATTERY_STATUS[battery_status])
+                discharge_level, _hidpp20.BATTERY_STATUS[battery_status]
+            )
         else:
             _log.warn("%s: unknown BATTERY %s", device, n)
         return True
@@ -271,9 +300,10 @@ def _process_feature_notification(device, status, n, feature):
         if n.address == 0x00:
             if _log.isEnabledFor(_DEBUG):
                 _log.debug("wireless status: %s", n)
-            if n.data[0:3] == b'\x01\x01\x01':
+            if n.data[0:3] == b"\x01\x01\x01":
                 status.changed(
-                    active=True, alert=_ALERT.NOTIFICATION, reason='powered on')
+                    active=True, alert=_ALERT.NOTIFICATION, reason="powered on"
+                )
             else:
                 _log.warn("%s: unknown WIRELESS %s", device, n)
         else:
@@ -281,8 +311,8 @@ def _process_feature_notification(device, status, n, feature):
         return True
 
     if feature == _F.SOLAR_DASHBOARD:
-        if n.data[5:9] == b'GOOD':
-            charge, lux, adc = _unpack('!BHH', n.data[:5])
+        if n.data[5:9] == b"GOOD":
+            charge, lux, adc = _unpack("!BHH", n.data[:5])
             # guesstimate the battery voltage, emphasis on 'guess'
             # status_text = '%1.2fV' % (adc * 2.67793237653 / 0x0672)
             status_text = _hidpp20.BATTERY_STATUS.discharging
@@ -305,7 +335,8 @@ def _process_feature_notification(device, status, n, feature):
                 reports_count = 15
                 reports_period = 2  # seconds
                 device.feature_request(
-                    _F.SOLAR_DASHBOARD, 0x00, reports_count, reports_period)
+                    _F.SOLAR_DASHBOARD, 0x00, reports_count, reports_period
+                )
             else:
                 _log.warn("%s: unknown SOLAR CHARGE %s", device, n)
         else:
@@ -321,22 +352,31 @@ def _process_feature_notification(device, status, n, feature):
             button_down = bool(touch & 0x02)
             mouse_lifted = bool(touch & 0x01)
             if _log.isEnabledFor(_INFO):
-                _log.info("%s: TOUCH MOUSE status: button_down=%s mouse_lifted=%s",
-                          device, button_down, mouse_lifted)
+                _log.info(
+                    "%s: TOUCH MOUSE status: button_down=%s mouse_lifted=%s",
+                    device,
+                    button_down,
+                    mouse_lifted,
+                )
         else:
             _log.warn("%s: unknown TOUCH MOUSE %s", device, n)
         return True
 
     if feature == _F.HIRES_WHEEL:
-        if (n.address == 0x00):
+        if n.address == 0x00:
             if _log.isEnabledFor(_INFO):
-                flags, delta_v = _unpack('>bh', n.data[:3])
+                flags, delta_v = _unpack(">bh", n.data[:3])
                 high_res = (flags & 0x10) != 0
-                periods = flags & 0x0f
-                _log.info("%s: WHEEL: res: %d periods: %d delta V:%-3d",
-                          device, high_res, periods, delta_v)
+                periods = flags & 0x0F
+                _log.info(
+                    "%s: WHEEL: res: %d periods: %d delta V:%-3d",
+                    device,
+                    high_res,
+                    periods,
+                    delta_v,
+                )
             return True
-        elif (n.address == 0x10):
+        elif n.address == 0x10:
             if _log.isEnabledFor(_INFO):
                 flags = ord(n.data[:1])
                 ratchet = flags & 0x01
@@ -346,5 +386,6 @@ def _process_feature_notification(device, status, n, feature):
             _log.warn("%s: unknown WHEEL %s", device, n)
         return True
 
-    _log.warn("%s: unrecognized %s for feature %s (index %02X)",
-              device, n, feature, n.sub_id)
+    _log.warn(
+        "%s: unrecognized %s for feature %s (index %02X)", device, n, feature, n.sub_id
+    )

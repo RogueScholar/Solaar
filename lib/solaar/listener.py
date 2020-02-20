@@ -24,13 +24,14 @@ from logitech_receiver import (
     Receiver,
     listener as _listener,
     status as _status,
-    notifications as _notifications
+    notifications as _notifications,
 )
 from . import configuration
 from solaar.i18n import _
 import time
 
 from logging import getLogger, INFO as _INFO
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -40,7 +41,8 @@ del getLogger
 #
 
 _GHOST_DEVICE = namedtuple(
-    '_GHOST_DEVICE', ('receiver', 'number', 'name', 'kind', 'status', 'online'))
+    "_GHOST_DEVICE", ("receiver", "number", "name", "kind", "status", "online")
+)
 _GHOST_DEVICE.__bool__ = lambda self: False
 _GHOST_DEVICE.__nonzero__ = _GHOST_DEVICE.__bool__
 del namedtuple
@@ -53,7 +55,9 @@ def _ghost(device):
         name=device.name,
         kind=device.kind,
         status=None,
-        online=False)
+        online=False,
+    )
+
 
 #
 #
@@ -69,8 +73,7 @@ class ReceiverListener(_listener.EventsListener):
     """
 
     def __init__(self, receiver, status_changed_callback):
-        super(ReceiverListener, self).__init__(
-            receiver, self._notifications_handler)
+        super(ReceiverListener, self).__init__(receiver, self._notifications_handler)
         # no reason to enable polling yet
         # self.tick_period = _POLL_TICK
         # self._last_tick = 0
@@ -81,8 +84,11 @@ class ReceiverListener(_listener.EventsListener):
 
     def has_started(self):
         if _log.isEnabledFor(_INFO):
-            _log.info("%s: notifications listener has started (%s)",
-                      self.receiver, self.receiver.handle)
+            _log.info(
+                "%s: notifications listener has started (%s)",
+                self.receiver,
+                self.receiver.handle,
+            )
         notification_flags = self.receiver.enable_notifications()
         self.receiver.status[_status.KEYS.NOTIFICATION_FLAGS] = notification_flags
         self.receiver.notify_devices()
@@ -147,14 +153,24 @@ class ReceiverListener(_listener.EventsListener):
         assert device is not None
         if _log.isEnabledFor(_INFO):
             if device.kind is None:
-                _log.info("status_changed %s: %s, %s (%X) %s", device,
-                          'present' if bool(device) else 'removed',
-                          device.status, alert, reason or '')
+                _log.info(
+                    "status_changed %s: %s, %s (%X) %s",
+                    device,
+                    "present" if bool(device) else "removed",
+                    device.status,
+                    alert,
+                    reason or "",
+                )
             else:
-                _log.info("status_changed %s: %s %s, %s (%X) %s", device,
-                          'paired' if bool(device) else 'unpaired',
-                          'online' if device.online else 'offline',
-                          device.status, alert, reason or '')
+                _log.info(
+                    "status_changed %s: %s %s, %s (%X) %s",
+                    device,
+                    "paired" if bool(device) else "unpaired",
+                    "online" if device.online else "offline",
+                    device.status,
+                    alert,
+                    reason or "",
+                )
 
         if device.kind is None:
             assert device == self.receiver
@@ -206,7 +222,11 @@ class ReceiverListener(_listener.EventsListener):
         if n.sub_id == 0x41:
             if not already_known:
                 dev = self.receiver.register_new_device(n.devnumber, n)
-            elif self.receiver.status.lock_open and self.receiver.re_pairs and not ord(n.data[0:1]) & 0x40:
+            elif (
+                self.receiver.status.lock_open
+                and self.receiver.re_pairs
+                and not ord(n.data[0:1]) & 0x40
+            ):
                 dev = self.receiver[n.devnumber]
                 # get rid of information on device re-paired away
                 del self.receiver[n.devnumber]
@@ -220,8 +240,13 @@ class ReceiverListener(_listener.EventsListener):
             dev = self.receiver[n.devnumber]
 
         if not dev:
-            _log.warn("%s: received %s for invalid device %d: %r",
-                      self.receiver, n, n.devnumber, dev)
+            _log.warn(
+                "%s: received %s for invalid device %d: %r",
+                self.receiver,
+                n,
+                n.devnumber,
+                dev,
+            )
             return
 
         # Apply settings every time the device connects
@@ -248,8 +273,10 @@ class ReceiverListener(_listener.EventsListener):
             dev.ping()
 
     def __str__(self):
-        return '<ReceiverListener(%s,%s)>' % (self.receiver.path, self.receiver.handle)
+        return "<ReceiverListener(%s,%s)>" % (self.receiver.path, self.receiver.handle)
+
     __unicode__ = __str__
+
 
 #
 #
@@ -280,7 +307,7 @@ def start_all():
     if _log.isEnabledFor(_INFO):
         _log.info("starting receiver listening threads")
     for device_info in _base.receivers():
-        _process_receiver_event('add', device_info)
+        _process_receiver_event("add", device_info)
 
 
 def stop_all():
@@ -319,7 +346,7 @@ _error_callback = None
 
 def setup_scanner(status_changed_callback, error_callback):
     global _status_callback, _error_callback
-    assert _status_callback is None, 'scanner was already set-up'
+    assert _status_callback is None, "scanner was already set-up"
 
     _status_callback = status_changed_callback
     _error_callback = error_callback
@@ -342,10 +369,10 @@ def _process_receiver_event(action, device_info):
         assert isinstance(l, ReceiverListener)
         l.stop()
 
-    if action == 'add':
+    if action == "add":
         # a new receiver device was detected
         try:
             _start(device_info)
         except OSError:
             # permission error, ignore this path for now
-            _error_callback('permissions', device_info.path)
+            _error_callback("permissions", device_info.path)

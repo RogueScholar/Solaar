@@ -25,6 +25,7 @@ from . import notify, tray, window
 from solaar.i18n import _
 from gi.repository import GLib, Gtk
 from logging import getLogger, DEBUG as _DEBUG
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -33,7 +34,7 @@ del getLogger
 #
 #
 
-assert Gtk.get_major_version() > 2, 'Solaar requires Gtk 3 python bindings'
+assert Gtk.get_major_version() > 2, "Solaar requires Gtk 3 python bindings"
 
 GLib.threads_init()
 
@@ -45,25 +46,36 @@ GLib.threads_init()
 def _error_dialog(reason, object):
     _log.error("error: %s %s", reason, object)
 
-    if reason == 'permissions':
+    if reason == "permissions":
         title = _("Permissions error")
-        text = _("Found a Logitech Receiver (%s), but did not have permission to open it.") % object + \
-            '\n\n' + \
-            _("If you've just installed Solaar, try removing the receiver and plugging it back in.")
-    elif reason == 'unpair':
+        text = (
+            _("Found a Logitech Receiver (%s), but did not have permission to open it.")
+            % object
+            + "\n\n"
+            + _(
+                "If you've just installed Solaar, try removing the receiver and plugging it back in."
+            )
+        )
+    elif reason == "unpair":
         title = _("Unpairing failed")
-        text = _("Failed to unpair %{device} from %{receiver}.").format(device=object.name, receiver=object.receiver.name) + \
-            '\n\n' + \
-            _("The receiver returned an error, with no further details.")
+        text = (
+            _("Failed to unpair %{device} from %{receiver}.").format(
+                device=object.name, receiver=object.receiver.name
+            )
+            + "\n\n"
+            + _("The receiver returned an error, with no further details.")
+        )
     else:
         raise Exception(
-            "ui.error_dialog: don't know how to handle (%s, %s)", reason, object)
+            "ui.error_dialog: don't know how to handle (%s, %s)", reason, object
+        )
 
     assert title
     assert text
 
-    m = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL,
-                          Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
+    m = Gtk.MessageDialog(
+        None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text
+    )
     m.set_title(title)
     m.run()
     m.destroy()
@@ -72,6 +84,7 @@ def _error_dialog(reason, object):
 def error_dialog(reason, object):
     assert reason is not None
     GLib.idle_add(_error_dialog, reason, object)
+
 
 #
 #
@@ -85,6 +98,7 @@ def ui_async(function, *args, **kwargs):
     if _task_runner:
         _task_runner(function, *args, **kwargs)
 
+
 #
 #
 #
@@ -92,12 +106,16 @@ def ui_async(function, *args, **kwargs):
 
 def _startup(app, startup_hook, use_tray, show_window):
     if _log.isEnabledFor(_DEBUG):
-        _log.debug("startup registered=%s, remote=%s",
-                   app.get_is_registered(), app.get_is_remote())
+        _log.debug(
+            "startup registered=%s, remote=%s",
+            app.get_is_registered(),
+            app.get_is_remote(),
+        )
 
     from solaar.tasks import TaskRunner as _TaskRunner
+
     global _task_runner
-    _task_runner = _TaskRunner('AsyncUI')
+    _task_runner = _TaskRunner("AsyncUI")
     _task_runner.start()
 
     notify.init()
@@ -140,19 +158,23 @@ def _shutdown(app, shutdown_hook):
 
 
 def run_loop(startup_hook, shutdown_hook, use_tray, show_window, args=None):
-    assert use_tray or show_window, 'need either tray or visible window'
+    assert use_tray or show_window, "need either tray or visible window"
     # from gi.repository.Gio import ApplicationFlags as _ApplicationFlags
-    APP_ID = 'io.github.pwr.solaar'
+    APP_ID = "io.github.pwr.solaar"
     # _ApplicationFlags.HANDLES_COMMAND_LINE)
     application = Gtk.Application.new(APP_ID, 0)
 
-    application.connect('startup', lambda app, startup_hook: _startup(
-        app, startup_hook, use_tray, show_window), startup_hook)
-    application.connect('command-line', _command_line)
-    application.connect('activate', _activate)
-    application.connect('shutdown', _shutdown, shutdown_hook)
+    application.connect(
+        "startup",
+        lambda app, startup_hook: _startup(app, startup_hook, use_tray, show_window),
+        startup_hook,
+    )
+    application.connect("command-line", _command_line)
+    application.connect("activate", _activate)
+    application.connect("shutdown", _shutdown, shutdown_hook)
 
     application.run(args)
+
 
 #
 #

@@ -28,6 +28,7 @@ from .common import (
 import math
 from copy import copy as _copy
 from logging import getLogger, DEBUG as _DEBUG
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -42,10 +43,29 @@ KIND = _NamedInts(toggle=0x01, choice=0x02, range=0x04)
 class Setting(object):
     """A setting descriptor.
     Needs to be instantiated for each specific device."""
-    __slots__ = ('name', 'label', 'description', 'kind', 'device_kind',
-                 '_rw', '_validator', '_device', '_value')
 
-    def __init__(self, name, rw, validator, kind=None, label=None, description=None, device_kind=None):
+    __slots__ = (
+        "name",
+        "label",
+        "description",
+        "kind",
+        "device_kind",
+        "_rw",
+        "_validator",
+        "_device",
+        "_value",
+    )
+
+    def __init__(
+        self,
+        name,
+        rw,
+        validator,
+        kind=None,
+        label=None,
+        description=None,
+        device_kind=None,
+    ):
         assert name
         self.name = name
         self.label = label or name
@@ -59,7 +79,7 @@ class Setting(object):
         self.kind = kind or validator.kind
 
     def __call__(self, device):
-        assert not hasattr(self, '_value')
+        assert not hasattr(self, "_value")
         assert self.device_kind is None or device.kind in self.device_kind
         p = device.protocol
         if p == 1.0:
@@ -76,26 +96,27 @@ class Setting(object):
 
     @property
     def choices(self):
-        assert hasattr(self, '_value')
-        assert hasattr(self, '_device')
+        assert hasattr(self, "_value")
+        assert hasattr(self, "_device")
 
         return self._validator.choices if self._validator.kind & KIND.choice else None
 
     @property
     def range(self):
-        assert hasattr(self, '_value')
-        assert hasattr(self, '_device')
+        assert hasattr(self, "_value")
+        assert hasattr(self, "_device")
 
         if self._validator.kind == KIND.range:
             return (self._validator.min_value, self._validator.max_value)
 
     def read(self, cached=True):
-        assert hasattr(self, '_value')
-        assert hasattr(self, '_device')
+        assert hasattr(self, "_value")
+        assert hasattr(self, "_device")
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("%s: settings read %r from %s",
-                       self.name, self._value, self._device)
+            _log.debug(
+                "%s: settings read %r from %s", self.name, self._value, self._device
+            )
 
         if self._value is None and self._device.persister:
             # We haven't read a value from the device yet,
@@ -120,13 +141,12 @@ class Setting(object):
             return self._value
 
     def write(self, value):
-        assert hasattr(self, '_value')
-        assert hasattr(self, '_device')
+        assert hasattr(self, "_value")
+        assert hasattr(self, "_device")
         assert value is not None
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("%s: settings write %r to %s",
-                       self.name, value, self._device)
+            _log.debug("%s: settings write %r to %s", self.name, value, self._device)
 
         if self._device.online:
             # Remember the value we're trying to set, even if the write fails.
@@ -144,8 +164,12 @@ class Setting(object):
             data_bytes = self._validator.prepare_write(value, current_value)
             if data_bytes is not None:
                 if _log.isEnabledFor(_DEBUG):
-                    _log.debug("%s: settings prepare write(%s) => %r",
-                               self.name, value, data_bytes)
+                    _log.debug(
+                        "%s: settings prepare write(%s) => %r",
+                        self.name,
+                        value,
+                        data_bytes,
+                    )
 
                 reply = self._rw.write(self._device, data_bytes)
                 if not reply:
@@ -155,23 +179,34 @@ class Setting(object):
             return value
 
     def apply(self):
-        assert hasattr(self, '_value')
-        assert hasattr(self, '_device')
+        assert hasattr(self, "_value")
+        assert hasattr(self, "_device")
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("%s: apply %s (%s)", self.name,
-                       self._value, self._device)
+            _log.debug("%s: apply %s (%s)", self.name, self._value, self._device)
 
         value = self.read()
         if value is not None:
             self.write(value)
 
     def __str__(self):
-        if hasattr(self, '_value'):
-            assert hasattr(self, '_device')
-            return '<Setting([%s:%s] %s:%s=%s)>' % (self._rw.kind, self._validator.kind, self._device.codename, self.name, self._value)
-        return '<Setting([%s:%s] %s)>' % (self._rw.kind, self._validator.kind, self.name)
+        if hasattr(self, "_value"):
+            assert hasattr(self, "_device")
+            return "<Setting([%s:%s] %s:%s=%s)>" % (
+                self._rw.kind,
+                self._validator.kind,
+                self._device.codename,
+                self.name,
+                self._value,
+            )
+        return "<Setting([%s:%s] %s)>" % (
+            self._rw.kind,
+            self._validator.kind,
+            self.name,
+        )
+
     __unicode__ = __repr__ = __str__
+
 
 #
 # read/write low-level operators
@@ -179,9 +214,9 @@ class Setting(object):
 
 
 class RegisterRW(object):
-    __slots__ = ('register', )
+    __slots__ = ("register",)
 
-    kind = _NamedInt(0x01, 'register')
+    kind = _NamedInt(0x01, "register")
 
     def __init__(self, register):
         assert isinstance(register, int)
@@ -195,13 +230,15 @@ class RegisterRW(object):
 
 
 class FeatureRW(object):
-    __slots__ = ('feature', 'read_fnid', 'write_fnid')
+    __slots__ = ("feature", "read_fnid", "write_fnid")
 
-    kind = _NamedInt(0x02, 'feature')
+    kind = _NamedInt(0x02, "feature")
     default_read_fnid = 0x00
     default_write_fnid = 0x10
 
-    def __init__(self, feature, read_fnid=default_read_fnid, write_fnid=default_write_fnid):
+    def __init__(
+        self, feature, read_fnid=default_read_fnid, write_fnid=default_write_fnid
+    ):
         assert isinstance(feature, _NamedInt)
         self.feature = feature
         self.read_fnid = read_fnid
@@ -215,6 +252,7 @@ class FeatureRW(object):
         assert self.feature is not None
         return device.feature_request(self.feature, self.write_fnid, data_bytes)
 
+
 #
 # value validators
 # handle the conversion from read bytes, to setting value, and back
@@ -222,7 +260,7 @@ class FeatureRW(object):
 
 
 class BooleanValidator(object):
-    __slots__ = ('true_value', 'false_value', 'mask', 'needs_current_value')
+    __slots__ = ("true_value", "false_value", "mask", "needs_current_value")
 
     kind = KIND.toggle
     default_true = 0x01
@@ -230,7 +268,9 @@ class BooleanValidator(object):
     # mask specifies all the affected bits in the value
     default_mask = 0xFF
 
-    def __init__(self, true_value=default_true, false_value=default_false, mask=default_mask):
+    def __init__(
+        self, true_value=default_true, false_value=default_false, mask=default_mask
+    ):
         if isinstance(true_value, int):
             assert isinstance(false_value, int)
             if mask is None:
@@ -240,14 +280,14 @@ class BooleanValidator(object):
             assert true_value & false_value == 0
             assert true_value & mask == true_value
             assert false_value & mask == false_value
-            self.needs_current_value = (mask != self.default_mask)
+            self.needs_current_value = mask != self.default_mask
         elif isinstance(true_value, bytes):
             if false_value is None or false_value == self.default_false:
-                false_value = b'\x00' * len(true_value)
+                false_value = b"\x00" * len(true_value)
             else:
                 assert isinstance(false_value, bytes)
             if mask is None or mask == self.default_mask:
-                mask = b'\xFF' * len(true_value)
+                mask = b"\xFF" * len(true_value)
             else:
                 assert isinstance(mask, bytes)
             assert len(mask) == len(true_value) == len(false_value)
@@ -257,7 +297,7 @@ class BooleanValidator(object):
             assert tv & fv == 0
             assert tv & mv == tv
             assert fv & mv == fv
-            self.needs_current_value = any(m != b'\xFF' for m in mask)
+            self.needs_current_value = any(m != b"\xFF" for m in mask)
         else:
             raise Exception("invalid mask '%r', type %s" % (mask, type(mask)))
 
@@ -269,14 +309,22 @@ class BooleanValidator(object):
         if isinstance(self.mask, int):
             reply_value = ord(reply_bytes[:1]) & self.mask
             if _log.isEnabledFor(_DEBUG):
-                _log.debug("BooleanValidator: validate read %r => %02X",
-                           reply_bytes, reply_value)
+                _log.debug(
+                    "BooleanValidator: validate read %r => %02X",
+                    reply_bytes,
+                    reply_value,
+                )
             if reply_value == self.true_value:
                 return True
             if reply_value == self.false_value:
                 return False
-            _log.warn("BooleanValidator: reply %02X mismatched %02X/%02X/%02X",
-                      reply_value, self.true_value, self.false_value, self.mask)
+            _log.warn(
+                "BooleanValidator: reply %02X mismatched %02X/%02X/%02X",
+                reply_value,
+                self.true_value,
+                self.false_value,
+                self.mask,
+            )
             return False
 
         count = len(self.mask)
@@ -291,8 +339,13 @@ class BooleanValidator(object):
         if reply_value == false_value:
             return False
 
-        _log.warn("BooleanValidator: reply %r mismatched %r/%r/%r",
-                  reply_bytes, self.true_value, self.false_value, self.mask)
+        _log.warn(
+            "BooleanValidator: reply %r mismatched %r/%r/%r",
+            reply_bytes,
+            self.true_value,
+            self.false_value,
+            self.mask,
+        )
         return False
 
     def prepare_write(self, new_value, current_value=None):
@@ -312,27 +365,31 @@ class BooleanValidator(object):
             to_write = bytearray(to_write)
             count = len(self.mask)
             for i in range(0, count):
-                b = ord(to_write[i:i+1])
-                m = ord(self.mask[i: i + 1])
+                b = ord(to_write[i : i + 1])
+                m = ord(self.mask[i : i + 1])
                 assert b & m == b
                 # b &= m
                 if current_value is not None and self.needs_current_value:
-                    b |= ord(current_value[i: i + 1]) & (0xFF ^ m)
+                    b |= ord(current_value[i : i + 1]) & (0xFF ^ m)
                 to_write[i] = b
             to_write = bytes(to_write)
 
-            if current_value is not None and to_write == current_value[:len(to_write)]:
+            if current_value is not None and to_write == current_value[: len(to_write)]:
                 return None
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("BooleanValidator: prepare_write(%s, %s) => %r",
-                       new_value, current_value, to_write)
+            _log.debug(
+                "BooleanValidator: prepare_write(%s, %s) => %r",
+                new_value,
+                current_value,
+                to_write,
+            )
 
         return to_write
 
 
 class ChoicesValidator(object):
-    __slots__ = ('choices', 'flag', '_bytes_count', 'needs_current_value')
+    __slots__ = ("choices", "flag", "_bytes_count", "needs_current_value")
 
     kind = KIND.choice
 
@@ -356,10 +413,12 @@ class ChoicesValidator(object):
         assert self._bytes_count < 8
 
     def validate_read(self, reply_bytes):
-        reply_value = _bytes2int(reply_bytes[:self._bytes_count])
+        reply_value = _bytes2int(reply_bytes[: self._bytes_count])
         valid_value = self.choices[reply_value]
         assert valid_value is not None, "%s: failed to validate read value %02X" % (
-            self.__class__.__name__, reply_value)
+            self.__class__.__name__,
+            reply_value,
+        )
         return valid_value
 
     def prepare_write(self, new_value, current_value=None):
@@ -382,8 +441,13 @@ class ChoicesValidator(object):
 
 
 class RangeValidator(object):
-    __slots__ = ('min_value', 'max_value', 'flag',
-                 '_bytes_count', 'needs_current_value')
+    __slots__ = (
+        "min_value",
+        "max_value",
+        "flag",
+        "_bytes_count",
+        "needs_current_value",
+    )
 
     kind = KIND.range
 
@@ -406,11 +470,15 @@ class RangeValidator(object):
         assert self._bytes_count < 8
 
     def validate_read(self, reply_bytes):
-        reply_value = _bytes2int(reply_bytes[:self._bytes_count])
-        assert reply_value >= self.min_value, "%s: failed to validate read value %02X" % (
-            self.__class__.__name__, reply_value)
-        assert reply_value <= self.max_value, "%s: failed to validate read value %02X" % (
-            self.__class__.__name__, reply_value)
+        reply_value = _bytes2int(reply_bytes[: self._bytes_count])
+        assert reply_value >= self.min_value, (
+            "%s: failed to validate read value %02X"
+            % (self.__class__.__name__, reply_value)
+        )
+        assert reply_value <= self.max_value, (
+            "%s: failed to validate read value %02X"
+            % (self.__class__.__name__, reply_value)
+        )
         return reply_value
 
     def prepare_write(self, new_value, current_value=None):

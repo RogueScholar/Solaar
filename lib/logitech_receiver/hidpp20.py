@@ -22,14 +22,17 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from . import special_keys
-from .common import (FirmwareInfo as _FirmwareInfo,
-                     ReprogrammableKeyInfo as _ReprogrammableKeyInfo,
-                     ReprogrammableKeyInfoV4 as _ReprogrammableKeyInfoV4,
-                     KwException as _KwException,
-                     NamedInts as _NamedInts,
-                     pack as _pack,
-                     unpack as _unpack)
+from .common import (
+    FirmwareInfo as _FirmwareInfo,
+    ReprogrammableKeyInfo as _ReprogrammableKeyInfo,
+    ReprogrammableKeyInfoV4 as _ReprogrammableKeyInfoV4,
+    KwException as _KwException,
+    NamedInts as _NamedInts,
+    pack as _pack,
+    unpack as _unpack,
+)
 from logging import getLogger, DEBUG as _DEBUG
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -140,7 +143,7 @@ FEATURE = _NamedInts(
     BRIGHTNESS_CONTROL=0x8040,
     REPORT_RATE=0x8060,
     COLOR_LED_EFFECTS=0x8070,
-    RGB_EFFECTS=0X8071,
+    RGB_EFFECTS=0x8071,
     PER_KEY_LIGHTING=0x8080,
     PER_KEY_LIGHTING_V2=0x8081,
     MODE_STATUS=0x8090,
@@ -153,12 +156,9 @@ FEATURE = _NamedInts(
     EQUALIZER=0x8310,
     HEADSET_OUT=0x8320,
 )
-FEATURE._fallback = lambda x: 'unknown:%04X' % x
+FEATURE._fallback = lambda x: "unknown:%04X" % x
 
-FEATURE_FLAG = _NamedInts(
-    internal=0x20,
-    hidden=0x40,
-    obsolete=0x80)
+FEATURE_FLAG = _NamedInts(internal=0x20, hidden=0x40, obsolete=0x80)
 
 DEVICE_KIND = _NamedInts(
     keyboard=0x00,
@@ -168,17 +168,14 @@ DEVICE_KIND = _NamedInts(
     touchpad=0x04,
     trackball=0x05,
     presenter=0x06,
-    receiver=0x07)
+    receiver=0x07,
+)
 
-FIRMWARE_KIND = _NamedInts(
-    Firmware=0x00,
-    Bootloader=0x01,
-    Hardware=0x02,
-    Other=0x03)
+FIRMWARE_KIND = _NamedInts(Firmware=0x00, Bootloader=0x01, Hardware=0x02, Other=0x03)
 
 
-def BATTERY_OK(status): return status not in (
-    BATTERY_STATUS.invalid_battery, BATTERY_STATUS.thermal_error)
+def BATTERY_OK(status):
+    return status not in (BATTERY_STATUS.invalid_battery, BATTERY_STATUS.thermal_error)
 
 
 BATTERY_STATUS = _NamedInts(
@@ -188,23 +185,14 @@ BATTERY_STATUS = _NamedInts(
     full=0x03,
     slow_recharge=0x04,
     invalid_battery=0x05,
-    thermal_error=0x06)
+    thermal_error=0x06,
+)
 
-CHARGE_STATUS = _NamedInts(
-    charging=0x00,
-    full=0x01,
-    not_charging=0x02,
-    error=0x07)
+CHARGE_STATUS = _NamedInts(charging=0x00, full=0x01, not_charging=0x02, error=0x07)
 
-CHARGE_LEVEL = _NamedInts(
-    average=0x00,
-    full=0x01,
-    critical=0x02)
+CHARGE_LEVEL = _NamedInts(average=0x00, full=0x01, critical=0x02)
 
-CHARGE_TYPE = _NamedInts(
-    standard=0x00,
-    fast=0x01,
-    slow=0x02)
+CHARGE_TYPE = _NamedInts(standard=0x00, fast=0x01, slow=0x02)
 
 ERROR = _NamedInts(
     unknown=0x01,
@@ -215,7 +203,8 @@ ERROR = _NamedInts(
     invalid_feature_index=0x06,
     invalid_function=0x07,
     busy=0x08,
-    unsupported=0x09)
+    unsupported=0x09,
+)
 
 #
 #
@@ -224,12 +213,15 @@ ERROR = _NamedInts(
 
 class FeatureNotSupported(_KwException):
     """Raised when trying to request a feature not supported by the device."""
+
     pass
 
 
 class FeatureCallError(_KwException):
     """Raised if the device replied to a feature call with an error."""
+
     pass
+
 
 #
 #
@@ -238,7 +230,8 @@ class FeatureCallError(_KwException):
 
 class FeaturesArray(object):
     """A sequence of features supported by a HID++ 2.0 device."""
-    __slots__ = ('supported', 'device', 'features')
+
+    __slots__ = ("supported", "device", "features")
     assert FEATURE.ROOT == 0x0000
 
     def __init__(self, device):
@@ -270,8 +263,7 @@ class FeaturesArray(object):
                 self.device = None
                 return False
 
-            reply = self.device.request(
-                0x0000, _pack('!H', FEATURE.FEATURE_SET))
+            reply = self.device.request(0x0000, _pack("!H", FEATURE.FEATURE_SET))
             if reply is None:
                 self.supported = False
             else:
@@ -280,7 +272,8 @@ class FeaturesArray(object):
                     count = self.device.request(fs_index << 8)
                     if count is None:
                         _log.warn(
-                            "FEATURE_SET found, but failed to read features count")
+                            "FEATURE_SET found, but failed to read features count"
+                        )
                         # most likely the device is unavailable
                         return False
                     else:
@@ -305,9 +298,10 @@ class FeaturesArray(object):
 
                 if self.features[index] is None:
                     feature = self.device.feature_request(
-                        FEATURE.FEATURE_SET, 0x10, index)
+                        FEATURE.FEATURE_SET, 0x10, index
+                    )
                     if feature:
-                        feature, = _unpack('!H', feature[:2])
+                        (feature,) = _unpack("!H", feature[:2])
                         self.features[index] = FEATURE[feature]
 
                 return self.features[index]
@@ -329,7 +323,7 @@ class FeaturesArray(object):
                     return True
 
             if may_have:
-                reply = self.device.request(0x0000, _pack('!H', ivalue))
+                reply = self.device.request(0x0000, _pack("!H", ivalue))
                 if reply:
                     index = ord(reply[0:1])
                     if index:
@@ -348,7 +342,7 @@ class FeaturesArray(object):
                     return index
 
             if may_have:
-                reply = self.device.request(0x0000, _pack('!H', ivalue))
+                reply = self.device.request(0x0000, _pack("!H", ivalue))
                 if reply:
                     index = ord(reply[0:1])
                     self.features[index] = FEATURE[ivalue]
@@ -368,6 +362,7 @@ class FeaturesArray(object):
     def __len__(self):
         return len(self.features) if self._check() else 0
 
+
 #
 #
 #
@@ -375,7 +370,8 @@ class FeaturesArray(object):
 
 class KeysArray(object):
     """A sequence of key mappings supported by a HID++ 2.0 device."""
-    __slots__ = ('device', 'keys', 'keyversion')
+
+    __slots__ = ("device", "keys", "keyversion")
 
     def __init__(self, device, count):
         assert device is not None
@@ -391,27 +387,37 @@ class KeysArray(object):
             # TODO: add here additional variants for other REPROG_CONTROLS
             if self.keys[index] is None:
                 keydata = feature_request(
-                    self.device, FEATURE.REPROG_CONTROLS, 0x10, index)
+                    self.device, FEATURE.REPROG_CONTROLS, 0x10, index
+                )
                 self.keyversion = 1
                 if keydata is None:
                     keydata = feature_request(
-                        self.device, FEATURE.REPROG_CONTROLS_V4, 0x10, index)
+                        self.device, FEATURE.REPROG_CONTROLS_V4, 0x10, index
+                    )
                     self.keyversion = 4
                 if keydata:
                     key, key_task, flags, pos, group, gmask = _unpack(
-                        '!HHBBBB', keydata[:8])
+                        "!HHBBBB", keydata[:8]
+                    )
                     ctrl_id_text = special_keys.CONTROL[key]
                     ctrl_task_text = special_keys.TASK[key_task]
                     if self.keyversion == 1:
                         self.keys[index] = _ReprogrammableKeyInfo(
-                            index, ctrl_id_text, ctrl_task_text, flags)
+                            index, ctrl_id_text, ctrl_task_text, flags
+                        )
                     if self.keyversion == 4:
                         try:
                             mapped_data = feature_request(
-                                self.device, FEATURE.REPROG_CONTROLS_V4, 0x20, key & 0xff00, key & 0xff)
+                                self.device,
+                                FEATURE.REPROG_CONTROLS_V4,
+                                0x20,
+                                key & 0xFF00,
+                                key & 0xFF,
+                            )
                             if mapped_data:
                                 remap_key, remap_flag, remapped = _unpack(
-                                    '!HBH', mapped_data[:5])
+                                    "!HBH", mapped_data[:5]
+                                )
                                 # if key not mapped map it to itself for display
                                 if remapped == 0:
                                     remapped = key
@@ -422,7 +428,15 @@ class KeysArray(object):
 
                         remapped_text = special_keys.CONTROL[remapped]
                         self.keys[index] = _ReprogrammableKeyInfoV4(
-                            index, ctrl_id_text, ctrl_task_text, flags, pos, group, gmask, remapped_text)
+                            index,
+                            ctrl_id_text,
+                            ctrl_task_text,
+                            flags,
+                            pos,
+                            group,
+                            gmask,
+                            remapped_text,
+                        )
 
             return self.keys[index]
 
@@ -448,6 +462,7 @@ class KeysArray(object):
     def __len__(self):
         return len(self.keys)
 
+
 #
 #
 #
@@ -471,24 +486,26 @@ def get_firmware(device):
 
         fw = []
         for index in range(0, count):
-            fw_info = feature_request(
-                device, FEATURE.DEVICE_FW_VERSION, 0x10, index)
+            fw_info = feature_request(device, FEATURE.DEVICE_FW_VERSION, 0x10, index)
             if fw_info:
                 level = ord(fw_info[:1]) & 0x0F
                 if level == 0 or level == 1:
                     name, version_major, version_minor, build = _unpack(
-                        '!3sBBH', fw_info[1:8])
-                    version = '%02X.%02X' % (version_major, version_minor)
+                        "!3sBBH", fw_info[1:8]
+                    )
+                    version = "%02X.%02X" % (version_major, version_minor)
                     if build:
-                        version += '.B%04X' % build
-                    extras = fw_info[9:].rstrip(b'\x00') or None
+                        version += ".B%04X" % build
+                    extras = fw_info[9:].rstrip(b"\x00") or None
                     fw_info = _FirmwareInfo(
-                        FIRMWARE_KIND[level], name.decode('ascii'), version, extras)
+                        FIRMWARE_KIND[level], name.decode("ascii"), version, extras
+                    )
                 elif level == FIRMWARE_KIND.Hardware:
                     fw_info = _FirmwareInfo(
-                        FIRMWARE_KIND.Hardware, '', str(ord(fw_info[1:2])), None)
+                        FIRMWARE_KIND.Hardware, "", str(ord(fw_info[1:2])), None
+                    )
                 else:
-                    fw_info = _FirmwareInfo(FIRMWARE_KIND.Other, '', '', None)
+                    fw_info = _FirmwareInfo(FIRMWARE_KIND.Other, "", "", None)
 
                 fw.append(fw_info)
                 # if _log.isEnabledFor(_DEBUG):
@@ -521,18 +538,20 @@ def get_name(device):
     if name_length:
         name_length = ord(name_length[:1])
 
-        name = b''
+        name = b""
         while len(name) < name_length:
-            fragment = feature_request(
-                device, FEATURE.DEVICE_NAME, 0x10, len(name))
+            fragment = feature_request(device, FEATURE.DEVICE_NAME, 0x10, len(name))
             if fragment:
-                name += fragment[:name_length - len(name)]
+                name += fragment[: name_length - len(name)]
             else:
                 _log.error(
-                    "failed to read whole name of %s (expected %d chars)", device, name_length)
+                    "failed to read whole name of %s (expected %d chars)",
+                    device,
+                    name_length,
+                )
                 return None
 
-        return name.decode('ascii')
+        return name.decode("ascii")
 
 
 def get_battery(device):
@@ -542,18 +561,24 @@ def get_battery(device):
     """
     battery = feature_request(device, FEATURE.BATTERY_STATUS)
     if battery:
-        discharge, dischargeNext, status = _unpack('!BBB', battery[:3])
+        discharge, dischargeNext, status = _unpack("!BBB", battery[:3])
         discharge = None if discharge == 0 else discharge
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("device %d battery %d%% charged, next level %d%% charge, status %d = %s",
-                       device.number, discharge, dischargeNext, status, BATTERY_STATUS[status])
+            _log.debug(
+                "device %d battery %d%% charged, next level %d%% charge, status %d = %s",
+                device.number,
+                discharge,
+                dischargeNext,
+                status,
+                BATTERY_STATUS[status],
+            )
         return discharge, BATTERY_STATUS[status]
 
 
 def get_voltage(device):
     battery_voltage = feature_request(device, FEATURE.BATTERY_VOLTAGE)
     if battery_voltage:
-        voltage, flags = _unpack('>HB', battery_voltage[:3])
+        voltage, flags = _unpack(">HB", battery_voltage[:3])
         charging = False
         charge_sts = ERROR.unknown
         charge_lvl = CHARGE_LEVEL.average
@@ -568,16 +593,24 @@ def get_voltage(device):
         elif charge_sts == CHARGE_STATUS.full:
             charge_lvl = CHARGE_LEVEL.full
 
-        if (flags & (1 << 3)):
+        if flags & (1 << 3):
             charge_type = CHARGE_TYPE.fast
-        elif (flags & (1 << 4)):
+        elif flags & (1 << 4):
             charge_type = CHARGE_TYPE.slow
-        elif (flags & (1 << 5)):
+        elif flags & (1 << 5):
             charge_lvl = CHARGE_LEVEL.critical
 
         if _log.isEnabledFor(_DEBUG):
-            _log.debug("device %d, battery voltage %d mV, charging = %d, charge status %d = %s, charge level %s, charge type %s",
-                       device.number, voltage, charging, (flags & 0x03), charge_sts, charge_lvl, charge_type)
+            _log.debug(
+                "device %d, battery voltage %d mV, charging = %d, charge status %d = %s, charge level %s, charge type %s",
+                device.number,
+                voltage,
+                charging,
+                (flags & 0x03),
+                charge_sts,
+                charge_lvl,
+                charge_type,
+            )
         return voltage, charging, charge_sts, charge_lvl, charge_type
 
 
@@ -593,54 +626,56 @@ def get_keys(device):
 def get_mouse_pointer_info(device):
     pointer_info = feature_request(device, FEATURE.MOUSE_POINTER)
     if pointer_info:
-        dpi, flags = _unpack('!HB', pointer_info[:3])
-        acceleration = ('none', 'low', 'med', 'high')[flags & 0x3]
+        dpi, flags = _unpack("!HB", pointer_info[:3])
+        acceleration = ("none", "low", "med", "high")[flags & 0x3]
         suggest_os_ballistics = (flags & 0x04) != 0
         suggest_vertical_orientation = (flags & 0x08) != 0
         return {
-            'dpi': dpi,
-            'acceleration': acceleration,
-            'suggest_os_ballistics': suggest_os_ballistics,
-            'suggest_vertical_orientation': suggest_vertical_orientation
+            "dpi": dpi,
+            "acceleration": acceleration,
+            "suggest_os_ballistics": suggest_os_ballistics,
+            "suggest_vertical_orientation": suggest_vertical_orientation,
         }
 
 
 def get_vertical_scrolling_info(device):
-    vertical_scrolling_info = feature_request(
-        device, FEATURE.VERTICAL_SCROLLING)
+    vertical_scrolling_info = feature_request(device, FEATURE.VERTICAL_SCROLLING)
     if vertical_scrolling_info:
-        roller, ratchet, lines = _unpack('!BBB', vertical_scrolling_info[:3])
-        roller_type = ('reserved', 'standard', 'reserved', '3G', 'micro',
-                       'normal touch pad', 'inverted touch pad', 'reserved')[roller]
-        return {
-            'roller': roller_type,
-            'ratchet': ratchet,
-            'lines': lines
-        }
+        roller, ratchet, lines = _unpack("!BBB", vertical_scrolling_info[:3])
+        roller_type = (
+            "reserved",
+            "standard",
+            "reserved",
+            "3G",
+            "micro",
+            "normal touch pad",
+            "inverted touch pad",
+            "reserved",
+        )[roller]
+        return {"roller": roller_type, "ratchet": ratchet, "lines": lines}
 
 
 def get_hi_res_scrolling_info(device):
     hi_res_scrolling_info = feature_request(device, FEATURE.HI_RES_SCROLLING)
     if hi_res_scrolling_info:
-        mode, resolution = _unpack('!BB', hi_res_scrolling_info[:2])
+        mode, resolution = _unpack("!BB", hi_res_scrolling_info[:2])
         return mode, resolution
 
 
 def get_pointer_speed_info(device):
     pointer_speed_info = feature_request(device, FEATURE.POINTER_SPEED)
     if pointer_speed_info:
-        pointer_speed_hi, pointer_speed_lo = _unpack(
-            '!BB', pointer_speed_info[:2])
+        pointer_speed_hi, pointer_speed_lo = _unpack("!BB", pointer_speed_info[:2])
         # if pointer_speed_lo > 0:
-        #	pointer_speed_lo = pointer_speed_lo
-        return pointer_speed_hi+pointer_speed_lo/256
+        # 	pointer_speed_lo = pointer_speed_lo
+        return pointer_speed_hi + pointer_speed_lo / 256
 
 
 def get_lowres_wheel_status(device):
     lowres_wheel_status = feature_request(device, FEATURE.LOWRES_WHEEL)
     if lowres_wheel_status:
-        wheel_flag = _unpack('!B', lowres_wheel_status[:1])[0]
-        wheel_reporting = ('HID', 'HID++')[wheel_flag & 0x01]
+        wheel_flag = _unpack("!B", lowres_wheel_status[:1])[0]
+        wheel_reporting = ("HID", "HID++")[wheel_flag & 0x01]
         return wheel_reporting
 
 
@@ -651,20 +686,20 @@ def get_hires_wheel(device):
 
     if caps and mode and ratchet:
         # Parse caps
-        multi, flags = _unpack('!BB', caps[:2])
+        multi, flags = _unpack("!BB", caps[:2])
 
         has_invert = (flags & 0x08) != 0
         has_ratchet = (flags & 0x04) != 0
 
         # Parse mode
-        wheel_mode, reserved = _unpack('!BB', mode[:2])
+        wheel_mode, reserved = _unpack("!BB", mode[:2])
 
         target = (wheel_mode & 0x01) != 0
         res = (wheel_mode & 0x02) != 0
         inv = (wheel_mode & 0x04) != 0
 
         # Parse Ratchet switch
-        ratchet_mode, reserved = _unpack('!BB', ratchet[:2])
+        ratchet_mode, reserved = _unpack("!BB", ratchet[:2])
 
         ratchet = (ratchet_mode & 0x01) != 0
 

@@ -23,16 +23,18 @@ import os.path as _path
 from json import load as _json_load, dump as _json_save
 
 from logging import getLogger, DEBUG as _DEBUG, INFO as _INFO
+
 _log = getLogger(__name__)
 del getLogger
 
-_XDG_CONFIG_HOME = _os.environ.get(
-    'XDG_CONFIG_HOME') or _path.expanduser(_path.join('~', '.config'))
-_file_path = _path.join(_XDG_CONFIG_HOME, 'solaar', 'config.json')
+_XDG_CONFIG_HOME = _os.environ.get("XDG_CONFIG_HOME") or _path.expanduser(
+    _path.join("~", ".config")
+)
+_file_path = _path.join(_XDG_CONFIG_HOME, "solaar", "config.json")
 
 
-_KEY_VERSION = '_version'
-_KEY_NAME = '_name'
+_KEY_VERSION = "_version"
+_KEY_NAME = "_name"
 _configuration = {}
 
 
@@ -40,7 +42,7 @@ def _load():
     if _path.isfile(_file_path):
         loaded_configuration = {}
         try:
-            with open(_file_path, 'r') as config_file:
+            with open(_file_path, "r") as config_file:
                 loaded_configuration = _json_load(config_file)
         except:
             _log.error("failed to load from %s", _file_path)
@@ -73,9 +75,10 @@ def save():
     _cleanup(_configuration)
 
     try:
-        with open(_file_path, 'w') as config_file:
-            _json_save(_configuration, config_file,
-                       skipkeys=True, indent=2, sort_keys=True)
+        with open(_file_path, "w") as config_file:
+            _json_save(
+                _configuration, config_file, skipkeys=True, indent=2, sort_keys=True
+            )
 
         if _log.isEnabledFor(_INFO):
             _log.info("saved %s to %s", _configuration, _file_path)
@@ -95,7 +98,7 @@ def _cleanup(d):
 
 
 def _device_key(device):
-    return '%s:%s' % (device.wpid, device.serial)
+    return "%s:%s" % (device.wpid, device.serial)
 
 
 class _DeviceEntry(dict):

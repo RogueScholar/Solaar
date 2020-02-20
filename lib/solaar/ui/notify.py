@@ -30,7 +30,8 @@ from solaar.i18n import _
 
 try:
     import gi
-    gi.require_version('Notify', '0.7')
+
+    gi.require_version("Notify", "0.7")
     # this import is allowed to fail, in which case the entire feature is unavailable
     from gi.repository import Notify
 
@@ -42,6 +43,7 @@ except (ValueError, ImportError):
 
 if available:
     from logging import getLogger, INFO as _INFO
+
     _log = getLogger(__name__)
     del getLogger
 
@@ -91,8 +93,11 @@ if available:
 
             # we need to use the filename here because the notifications daemon
             # is an external application that does not know about our icon sets
-            icon_file = _icons.icon_file(NAME.lower()) if icon is None \
+            icon_file = (
+                _icons.icon_file(NAME.lower())
+                if icon is None
                 else _icons.icon_file(icon)
+            )
 
             n.update(NAME, reason, icon_file)
             n.set_urgency(Notify.Urgency.NORMAL)
@@ -125,8 +130,11 @@ if available:
 
             # we need to use the filename here because the notifications daemon
             # is an external application that does not know about our icon sets
-            icon_file = _icons.device_icon_file(dev.name, dev.kind) if icon is None \
+            icon_file = (
+                _icons.device_icon_file(dev.name, dev.kind)
+                if icon is None
                 else _icons.icon_file(icon)
+            )
 
             n.update(summary, message, icon_file)
             urgency = Notify.Urgency.LOW if dev.status else Notify.Urgency.NORMAL
@@ -139,9 +147,18 @@ if available:
             except Exception:
                 _log.exception("showing %s", n)
 
+
 else:
-    def init(): return False
-    def uninit(): return None
+
+    def init():
+        return False
+
+    def uninit():
+        return None
+
     # toggle = lambda action: False
-    def alert(reason): return None
-    def show(dev, reason=None): return None
+    def alert(reason):
+        return None
+
+    def show(dev, reason=None):
+        return None

@@ -28,6 +28,7 @@ from gi.repository.Gdk import ScrollDirection
 from gi.repository import Gtk, GLib
 from time import time as _timestamp
 from logging import getLogger, DEBUG as _DEBUG
+
 _log = getLogger(__name__)
 del getLogger
 
@@ -38,7 +39,7 @@ del getLogger
 
 _TRAY_ICON_SIZE = 32  # pixels
 _MENU_ICON_SIZE = Gtk.IconSize.LARGE_TOOLBAR
-_RECEIVER_SEPARATOR = ('~', None, None, None)
+_RECEIVER_SEPARATOR = ("~", None, None, None)
 
 #
 #
@@ -56,9 +57,13 @@ def _create_menu(quit_handler):
     menu.append(Gtk.SeparatorMenuItem.new())
 
     from .action import about, make
+
     menu.append(about.create_menu_item())
-    menu.append(make('application-exit', _("Quit"), quit_handler,
-                     stock_id=Gtk.STOCK_QUIT).create_menu_item())
+    menu.append(
+        make(
+            "application-exit", _("Quit"), quit_handler, stock_id=Gtk.STOCK_QUIT
+        ).create_menu_item()
+    )
     del about, make
 
     menu.show_all()
@@ -146,8 +151,9 @@ def _scroll(tray_icon, event, direction=None):
 
 try:
     import gi
+
     try:
-        gi.require_version('AppIndicator3', '0.1')
+        gi.require_version("AppIndicator3", "0.1")
     except ValueError:
         # Treat unavailable versions the same as unavailable packages
         raise ImportError
@@ -160,17 +166,18 @@ try:
         theme_paths = Gtk.IconTheme.get_default().get_search_path()
 
         ind = AppIndicator3.Indicator.new_with_path(
-            'indicator-solaar',
+            "indicator-solaar",
             _icons.TRAY_INIT,
             AppIndicator3.IndicatorCategory.HARDWARE,
-            ':'.join(theme_paths))
+            ":".join(theme_paths),
+        )
         ind.set_title(NAME)
         ind.set_status(AppIndicator3.IndicatorStatus.ACTIVE)
-        ind.set_attention_icon_full(_icons.TRAY_ATTENTION, '')
+        ind.set_attention_icon_full(_icons.TRAY_ATTENTION, "")
         # ind.set_label(NAME, NAME)
 
         ind.set_menu(menu)
-        ind.connect('scroll-event', _scroll)
+        ind.connect("scroll-event", _scroll)
 
         return ind
 
@@ -184,13 +191,13 @@ try:
             battery_charging = device_status.get(_K.BATTERY_CHARGING)
             tray_icon_name = _icons.battery(battery_level, battery_charging)
 
-            description = '%s: %s' % (name, device_status.to_string())
+            description = "%s: %s" % (name, device_status.to_string())
         else:
             # there may be a receiver, but no peripherals
             tray_icon_name = _icons.TRAY_OKAY if _devices_info else _icons.TRAY_INIT
 
             tooltip_lines = _generate_tooltip_lines()
-            description = '\n'.join(tooltip_lines).rstrip('\n')
+            description = "\n".join(tooltip_lines).rstrip("\n")
 
         # icon_file = _icons.icon_file(icon_name, _TRAY_ICON_SIZE)
         _icon.set_icon_full(tray_icon_name, description)
@@ -203,10 +210,12 @@ try:
 
     def attention(reason=None):
         if _icon.get_status != AppIndicator3.IndicatorStatus.ATTENTION:
-            _icon.set_attention_icon_full(_icons.TRAY_ATTENTION, reason or '')
+            _icon.set_attention_icon_full(_icons.TRAY_ATTENTION, reason or "")
             _icon.set_status(AppIndicator3.IndicatorStatus.ATTENTION)
-            GLib.timeout_add(10 * 1000, _icon.set_status,
-                             AppIndicator3.IndicatorStatus.ACTIVE)
+            GLib.timeout_add(
+                10 * 1000, _icon.set_status, AppIndicator3.IndicatorStatus.ACTIVE
+            )
+
 
 except ImportError:
 
@@ -218,10 +227,14 @@ except ImportError:
         icon.set_name(NAME)
         icon.set_title(NAME)
         icon.set_tooltip_text(NAME)
-        icon.connect('activate', _window_toggle)
-        icon.connect('scroll-event', _scroll)
-        icon.connect('popup-menu',
-                     lambda icon, button, time: menu.popup(None, None, icon.position_menu, icon, button, time))
+        icon.connect("activate", _window_toggle)
+        icon.connect("scroll-event", _scroll)
+        icon.connect(
+            "popup-menu",
+            lambda icon, button, time: menu.popup(
+                None, None, icon.position_menu, icon, button, time
+            ),
+        )
 
         return icon
 
@@ -230,7 +243,7 @@ except ImportError:
 
     def _update_tray_icon():
         tooltip_lines = _generate_tooltip_lines()
-        tooltip = '\n'.join(tooltip_lines).rstrip('\n')
+        tooltip = "\n".join(tooltip_lines).rstrip("\n")
         _icon.set_tooltip_markup(tooltip)
 
         if _picked_device:
@@ -240,7 +253,9 @@ except ImportError:
             tray_icon_name = _icons.battery(battery_level, battery_charging)
         else:
             # there may be a receiver, but no peripherals
-            tray_icon_name = _icons.TRAY_OKAY if _devices_info else _icons.TRAY_ATTENTION
+            tray_icon_name = (
+                _icons.TRAY_OKAY if _devices_info else _icons.TRAY_ATTENTION
+            )
         _icon.set_from_icon_name(tray_icon_name)
 
     def _update_menu_icon(image_widget, icon_name):
@@ -264,6 +279,7 @@ except ImportError:
             _icon_before_attention = _icon.get_icon_name()
             GLib.idle_add(_blink, 9)
 
+
 #
 #
 #
@@ -271,7 +287,7 @@ except ImportError:
 
 def _generate_tooltip_lines():
     if not _devices_info:
-        yield '<b>%s</b>: ' % NAME + _("no receiver")
+        yield "<b>%s</b>: " % NAME + _("no receiver")
         return
 
     for _ignore, number, name, status in _devices_info:
@@ -280,17 +296,17 @@ def _generate_tooltip_lines():
 
         p = status.to_string()
         if p:  # does it have any properties to print?
-            yield '<b>%s</b>' % name
+            yield "<b>%s</b>" % name
             if status:
-                yield '\t%s' % p
+                yield "\t%s" % p
             else:
-                yield '\t%s <small>(' % p + _("offline") + ')</small>'
+                yield "\t%s <small>(" % p + _("offline") + ")</small>"
         else:
             if status:
-                yield '<b>%s</b> <small>(' % name + _("no status") + ')</small>'
+                yield "<b>%s</b> <small>(" % name + _("no status") + ")</small>"
             else:
-                yield '<b>%s</b> <small>(' % name + _("offline") + ')</small>'
-        yield ''
+                yield "<b>%s</b> <small>(" % name + _("offline") + ")</small>"
+        yield ""
 
 
 def _pick_device_with_lowest_battery():
@@ -319,6 +335,7 @@ def _pick_device_with_lowest_battery():
 #
 #
 
+
 def _add_device(device):
     assert device
     assert device.receiver
@@ -344,20 +361,17 @@ def _add_device(device):
             break
         index = index + 1
 
-    new_device_info = (receiver_path, device.number,
-                       device.name, device.status)
+    new_device_info = (receiver_path, device.number, device.name, device.status)
     assert len(new_device_info) == len(_RECEIVER_SEPARATOR)
     _devices_info.insert(index, new_device_info)
 
     # label_prefix = b'\xE2\x94\x84 '.decode('utf-8')
-    label_prefix = '   '
+    label_prefix = "   "
 
-    new_menu_item = Gtk.ImageMenuItem.new_with_label(
-        label_prefix + device.name)
+    new_menu_item = Gtk.ImageMenuItem.new_with_label(label_prefix + device.name)
     new_menu_item.set_image(Gtk.Image())
     new_menu_item.show_all()
-    new_menu_item.connect('activate', _window_popup,
-                          receiver_path, device.number)
+    new_menu_item.connect("activate", _window_popup, receiver_path, device.number)
     _menu.insert(new_menu_item, index)
 
     return index
@@ -386,10 +400,9 @@ def _add_receiver(receiver):
     new_menu_item = Gtk.ImageMenuItem.new_with_label(receiver.name)
     _menu.insert(new_menu_item, index)
     icon_set = _icons.device_icon_set(receiver.name)
-    new_menu_item.set_image(
-        Gtk.Image().new_from_icon_set(icon_set, _MENU_ICON_SIZE))
+    new_menu_item.set_image(Gtk.Image().new_from_icon_set(icon_set, _MENU_ICON_SIZE))
     new_menu_item.show_all()
-    new_menu_item.connect('activate', _window_popup, receiver.path)
+    new_menu_item.connect("activate", _window_popup, receiver.path)
 
     _devices_info.append(_RECEIVER_SEPARATOR)
     separator = Gtk.SeparatorMenuItem.new()
@@ -431,6 +444,7 @@ def _update_menu_item(index, device):
     image_widget = menu_item.get_image()
     image_widget.set_sensitive(bool(device.online))
     _update_menu_icon(image_widget, icon_name)
+
 
 #
 #
@@ -514,7 +528,11 @@ def update(device=None):
         menu_items[no_receivers_index + 1].set_visible(not _devices_info)
 
     global _picked_device
-    if (not _picked_device or _last_scroll == 0) and device is not None and device.kind is not None:
+    if (
+        (not _picked_device or _last_scroll == 0)
+        and device is not None
+        and device.kind is not None
+    ):
         # if it's just a receiver update, it's unlikely the picked device would change
         _picked_device = _pick_device_with_lowest_battery()
 

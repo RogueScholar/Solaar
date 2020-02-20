@@ -23,7 +23,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 
-_DRIVER = ('hid-generic', 'generic-usb', 'logitech-djreceiver')
+_DRIVER = ("hid-generic", "generic-usb", "logitech-djreceiver")
 
 # max_devices is only used for receivers that do not support reading from _R.receiver_info offset 0x03, default to 1
 # may_unpair is only used for receivers that do not support reading from _R.receiver_info offset 0x03, default to False
@@ -32,80 +32,85 @@ _DRIVER = ('hid-generic', 'generic-usb', 'logitech-djreceiver')
 # currently only one receiver is so marked - should there be more?
 
 
-def _unifying_receiver(product_id): return {
-    'vendor_id': 0x046d,
-    'product_id': product_id,
-    'usb_interface': 2,
-    'hid_driver': _DRIVER,
-    'name': 'Unifying Receiver'
-}
+def _unifying_receiver(product_id):
+    return {
+        "vendor_id": 0x046D,
+        "product_id": product_id,
+        "usb_interface": 2,
+        "hid_driver": _DRIVER,
+        "name": "Unifying Receiver",
+    }
 
 
-def _nano_receiver(product_id): return {
-    'vendor_id': 0x046d,
-    'product_id': product_id,
-    'usb_interface': 1,
-    'hid_driver': _DRIVER,
-    'name': 'Nano Receiver',
-    'may_unpair': False,
-    're_pairs': True
-}
+def _nano_receiver(product_id):
+    return {
+        "vendor_id": 0x046D,
+        "product_id": product_id,
+        "usb_interface": 1,
+        "hid_driver": _DRIVER,
+        "name": "Nano Receiver",
+        "may_unpair": False,
+        "re_pairs": True,
+    }
 
 
-def _nano_receiver_max2(product_id): return {
-    'vendor_id': 0x046d,
-    'product_id': product_id,
-    'usb_interface': 1,
-    'hid_driver': _DRIVER,
-    'name': 'Nano Receiver',
-    'max_devices': 2,
-    'may_unpair': False,
-    're_pairs': True
-}
+def _nano_receiver_max2(product_id):
+    return {
+        "vendor_id": 0x046D,
+        "product_id": product_id,
+        "usb_interface": 1,
+        "hid_driver": _DRIVER,
+        "name": "Nano Receiver",
+        "max_devices": 2,
+        "may_unpair": False,
+        "re_pairs": True,
+    }
 
 
-def _lenovo_receiver(product_id): return {
-    'vendor_id': 0x17ef,
-    'product_id': product_id,
-    'usb_interface': 1,
-    'hid_driver': _DRIVER,
-    'name': 'Nano Receiver'
-}
+def _lenovo_receiver(product_id):
+    return {
+        "vendor_id": 0x17EF,
+        "product_id": product_id,
+        "usb_interface": 1,
+        "hid_driver": _DRIVER,
+        "name": "Nano Receiver",
+    }
 
 
-def _lightspeed_receiver(product_id): return {
-    'vendor_id': 0x046d,
-    'product_id': product_id,
-    'usb_interface': 2,
-    'hid_driver': _DRIVER,
-    'name': 'Lightspeed Receiver'
-}
+def _lightspeed_receiver(product_id):
+    return {
+        "vendor_id": 0x046D,
+        "product_id": product_id,
+        "usb_interface": 2,
+        "hid_driver": _DRIVER,
+        "name": "Lightspeed Receiver",
+    }
 
 
 # standard Unifying receivers (marked with the orange Unifying logo)
-UNIFYING_RECEIVER_C52B = _unifying_receiver(0xc52b)
-UNIFYING_RECEIVER_C532 = _unifying_receiver(0xc532)
+UNIFYING_RECEIVER_C52B = _unifying_receiver(0xC52B)
+UNIFYING_RECEIVER_C532 = _unifying_receiver(0xC532)
 
 # Nano receviers that support the Unifying protocol
-NANO_RECEIVER_ADVANCED = _nano_receiver(0xc52f)
+NANO_RECEIVER_ADVANCED = _nano_receiver(0xC52F)
 
 # Nano receivers that don't support the Unifying protocol
-NANO_RECEIVER_C517 = _nano_receiver(0xc517)
-NANO_RECEIVER_C518 = _nano_receiver(0xc518)
-NANO_RECEIVER_C51A = _nano_receiver(0xc51a)
-NANO_RECEIVER_C51B = _nano_receiver(0xc51b)
-NANO_RECEIVER_C521 = _nano_receiver(0xc521)
-NANO_RECEIVER_C525 = _nano_receiver(0xc525)
-NANO_RECEIVER_C526 = _nano_receiver(0xc526)
-NANO_RECEIVER_C52e = _nano_receiver(0xc52e)
-NANO_RECEIVER_C531 = _nano_receiver(0xc531)
-NANO_RECEIVER_C534 = _nano_receiver_max2(0xc534)
+NANO_RECEIVER_C517 = _nano_receiver(0xC517)
+NANO_RECEIVER_C518 = _nano_receiver(0xC518)
+NANO_RECEIVER_C51A = _nano_receiver(0xC51A)
+NANO_RECEIVER_C51B = _nano_receiver(0xC51B)
+NANO_RECEIVER_C521 = _nano_receiver(0xC521)
+NANO_RECEIVER_C525 = _nano_receiver(0xC525)
+NANO_RECEIVER_C526 = _nano_receiver(0xC526)
+NANO_RECEIVER_C52e = _nano_receiver(0xC52E)
+NANO_RECEIVER_C531 = _nano_receiver(0xC531)
+NANO_RECEIVER_C534 = _nano_receiver_max2(0xC534)
 NANO_RECEIVER_6042 = _lenovo_receiver(0x6042)
 
 # Lightspeed receivers
-LIGHTSPEED_RECEIVER_C539 = _lightspeed_receiver(0xc539)
-LIGHTSPEED_RECEIVER_C53a = _lightspeed_receiver(0xc53a)
-LIGHTSPEED_RECEIVER_C53f = _lightspeed_receiver(0xc53f)
+LIGHTSPEED_RECEIVER_C539 = _lightspeed_receiver(0xC539)
+LIGHTSPEED_RECEIVER_C53a = _lightspeed_receiver(0xC53A)
+LIGHTSPEED_RECEIVER_C53f = _lightspeed_receiver(0xC53F)
 
 del _DRIVER, _unifying_receiver, _nano_receiver, _lenovo_receiver, _lightspeed_receiver
 
@@ -135,6 +140,6 @@ def product_information(usb_id):
     if isinstance(usb_id, str):
         usb_id = int(usb_id, 16)
     for r in ALL:
-        if usb_id == r.get('product_id'):
+        if usb_id == r.get("product_id"):
             return r
     return {}

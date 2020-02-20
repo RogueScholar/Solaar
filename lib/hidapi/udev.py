@@ -37,21 +37,24 @@ from pyudev import Context as _Context, Monitor as _Monitor, Device as _Device
 from pyudev import DeviceNotFoundError
 
 
-native_implementation = 'udev'
+native_implementation = "udev"
 
 
 # the tuple object we'll expose when enumerating devices
-DeviceInfo = namedtuple('DeviceInfo', [
-    'path',
-    'vendor_id',
-    'product_id',
-    'serial',
-    'release',
-    'manufacturer',
-    'product',
-    'interface',
-    'driver',
-])
+DeviceInfo = namedtuple(
+    "DeviceInfo",
+    [
+        "path",
+        "vendor_id",
+        "product_id",
+        "serial",
+        "release",
+        "manufacturer",
+        "product",
+        "interface",
+        "driver",
+    ],
+)
 del namedtuple
 
 
@@ -59,6 +62,7 @@ del namedtuple
 # exposed API
 # docstrings mostly copied from hidapi.h
 #
+
 
 def init():
     """This function is a no-op, and exists only to match the native hidapi
@@ -80,29 +84,31 @@ def exit():
 
 # The filter is used to determine whether this is a device of interest to Solaar
 def _match(action, device, filter):
-    vendor_id = filter.get('vendor_id')
-    product_id = filter.get('product_id')
-    interface_number = filter.get('usb_interface')
-    hid_driver = filter.get('hid_driver')
+    vendor_id = filter.get("vendor_id")
+    product_id = filter.get("product_id")
+    interface_number = filter.get("usb_interface")
+    hid_driver = filter.get("hid_driver")
 
-    usb_device = device.find_parent('usb', 'usb_device')
+    usb_device = device.find_parent("usb", "usb_device")
     # print ("* parent", action, device, "usb:", usb_device)
     if not usb_device:
         return
 
-    vid = usb_device.get('ID_VENDOR_ID')
-    pid = usb_device.get('ID_MODEL_ID')
+    vid = usb_device.get("ID_VENDOR_ID")
+    pid = usb_device.get("ID_MODEL_ID")
     if vid is None or pid is None:
         return  # there are reports that sometimes the usb_device isn't set up right so be defensive
-    if not ((vendor_id is None or vendor_id == int(vid, 16)) and
-            (product_id is None or product_id == int(pid, 16))):
+    if not (
+        (vendor_id is None or vendor_id == int(vid, 16))
+        and (product_id is None or product_id == int(pid, 16))
+    ):
         return
 
-    if action == 'add':
-        hid_device = device.find_parent('hid')
+    if action == "add":
+        hid_device = device.find_parent("hid")
         if not hid_device:
             return
-        hid_driver_name = hid_device.get('DRIVER')
+        hid_driver_name = hid_device.get("DRIVER")
         # print ("** found hid", action, device, "hid:", hid_device, hid_driver_name)
         if hid_driver:
             if isinstance(hid_driver, tuple):
@@ -111,41 +117,51 @@ def _match(action, device, filter):
             elif hid_driver_name != hid_driver:
                 return
 
-        intf_device = device.find_parent('usb', 'usb_interface')
+        intf_device = device.find_parent("usb", "usb_interface")
         # print ("*** usb interface", action, device, "usb_interface:", intf_device)
         if interface_number is None:
-            usb_interface = None if intf_device is None else intf_device.attributes.asint(
-                'bInterfaceNumber')
+            usb_interface = (
+                None
+                if intf_device is None
+                else intf_device.attributes.asint("bInterfaceNumber")
+            )
         else:
-            usb_interface = None if intf_device is None else intf_device.attributes.asint(
-                'bInterfaceNumber')
+            usb_interface = (
+                None
+                if intf_device is None
+                else intf_device.attributes.asint("bInterfaceNumber")
+            )
             if usb_interface is None or interface_number != usb_interface:
                 return
 
         attrs = usb_device.attributes
-        d_info = DeviceInfo(path=device.device_node,
-                            vendor_id=vid[-4:],
-                            product_id=pid[-4:],
-                            serial=hid_device.get('HID_UNIQ'),
-                            release=attrs.get('bcdDevice'),
-                            manufacturer=attrs.get('manufacturer'),
-                            product=attrs.get('product'),
-                            interface=usb_interface,
-                            driver=hid_driver_name)
+        d_info = DeviceInfo(
+            path=device.device_node,
+            vendor_id=vid[-4:],
+            product_id=pid[-4:],
+            serial=hid_device.get("HID_UNIQ"),
+            release=attrs.get("bcdDevice"),
+            manufacturer=attrs.get("manufacturer"),
+            product=attrs.get("product"),
+            interface=usb_interface,
+            driver=hid_driver_name,
+        )
         return d_info
 
-    elif action == 'remove':
+    elif action == "remove":
         # print (dict(device), dict(usb_device))
 
-        d_info = DeviceInfo(path=device.device_node,
-                            vendor_id=vid[-4:],
-                            product_id=pid[-4:],
-                            serial=None,
-                            release=None,
-                            manufacturer=None,
-                            product=None,
-                            interface=None,
-                            driver=None)
+        d_info = DeviceInfo(
+            path=device.device_node,
+            vendor_id=vid[-4:],
+            product_id=pid[-4:],
+            serial=None,
+            release=None,
+            manufacturer=None,
+            product=None,
+            interface=None,
+            driver=None,
+        )
         return d_info
 
 
@@ -164,7 +180,7 @@ def monitor_glib(callback, *device_filters):
     # 			break
 
     m = _Monitor.from_netlink(c)
-    m.filter_by(subsystem='hidraw')
+    m.filter_by(subsystem="hidraw")
 
     def _process_udev_event(monitor, condition, cb, filters):
         if condition == GLib.IO_IN:
@@ -172,13 +188,13 @@ def monitor_glib(callback, *device_filters):
             if event:
                 action, device = event
                 # print ("***", action, device)
-                if action == 'add':
+                if action == "add":
                     for filter in filters:
                         d_info = _match(action, device, filter)
                         if d_info:
                             GLib.idle_add(cb, action, d_info)
                             break
-                elif action == 'remove':
+                elif action == "remove":
                     # the GLib notification does _not_ match!
                     pass
         return True
@@ -186,17 +202,30 @@ def monitor_glib(callback, *device_filters):
     try:
         # io_add_watch_full may not be available...
         GLib.io_add_watch_full(
-            m, GLib.PRIORITY_LOW, GLib.IO_IN, _process_udev_event, callback, device_filters)
+            m,
+            GLib.PRIORITY_LOW,
+            GLib.IO_IN,
+            _process_udev_event,
+            callback,
+            device_filters,
+        )
         # print ("did io_add_watch_full")
     except AttributeError:
         try:
             # and the priority parameter appeared later in the API
-            GLib.io_add_watch(m, GLib.PRIORITY_LOW, GLib.IO_IN,
-                              _process_udev_event, callback, device_filters)
+            GLib.io_add_watch(
+                m,
+                GLib.PRIORITY_LOW,
+                GLib.IO_IN,
+                _process_udev_event,
+                callback,
+                device_filters,
+            )
             # print ("did io_add_watch with priority")
         except:
-            GLib.io_add_watch(m, GLib.IO_IN, _process_udev_event,
-                              callback, device_filters)
+            GLib.io_add_watch(
+                m, GLib.IO_IN, _process_udev_event, callback, device_filters
+            )
             # print ("did io_add_watch")
 
     m.start()
@@ -211,8 +240,8 @@ def enumerate(usb_id):
     :returns: a list of matching ``DeviceInfo`` tuples.
     """
 
-    for dev in _Context().list_devices(subsystem='hidraw'):
-        dev_info = _match('add', dev, usb_id)
+    for dev in _Context().list_devices(subsystem="hidraw"):
+        dev_info = _match("add", dev, usb_id)
         if dev_info:
             yield dev_info
 
@@ -238,7 +267,7 @@ def open_path(device_path):
     :returns: an opaque device handle, or ``None``.
     """
     assert device_path
-    assert device_path.startswith('/dev/hidraw')
+    assert device_path.startswith("/dev/hidraw")
     return _os.open(device_path, _os.O_RDWR | _os.O_SYNC)
 
 
@@ -277,7 +306,7 @@ def write(device_handle, data):
     assert isinstance(data, bytes), (repr(data), type(data))
     retrycount = 0
     bytes_written = 0
-    while(retrycount < 3):
+    while retrycount < 3:
         try:
             bytes_written = _os.write(device_handle, data)
             retrycount += 1
@@ -287,8 +316,10 @@ def write(device_handle, data):
         else:
             break
     if bytes_written != len(data):
-        raise IOError(_errno.EIO, 'written %d bytes out of expected %d' %
-                      (bytes_written, len(data)))
+        raise IOError(
+            _errno.EIO,
+            "written %d bytes out of expected %d" % (bytes_written, len(data)),
+        )
 
 
 def read(device_handle, bytes_count, timeout_ms=-1):
@@ -309,13 +340,11 @@ def read(device_handle, bytes_count, timeout_ms=-1):
     """
     assert device_handle
     timeout = None if timeout_ms < 0 else timeout_ms / 1000.0
-    rlist, wlist, xlist = _select(
-        [device_handle], [], [device_handle], timeout)
+    rlist, wlist, xlist = _select([device_handle], [], [device_handle], timeout)
 
     if xlist:
         assert xlist == [device_handle]
-        raise IOError(_errno.EIO, 'exception on file descriptor %d' %
-                      device_handle)
+        raise IOError(_errno.EIO, "exception on file descriptor %d" % device_handle)
 
     if rlist:
         assert rlist == [device_handle]
@@ -324,13 +353,13 @@ def read(device_handle, bytes_count, timeout_ms=-1):
         assert isinstance(data, bytes), (repr(data), type(data))
         return data
     else:
-        return b''
+        return b""
 
 
 _DEVICE_STRINGS = {
-    0: 'manufacturer',
-    1: 'product',
-    2: 'serial',
+    0: "manufacturer",
+    1: "product",
+    2: "serial",
 }
 
 
@@ -357,7 +386,7 @@ def get_serial(device_handle):
     """
     serial = get_indexed_string(device_handle, 2)
     if serial is not None:
-        return ''.join(hex(ord(c)) for c in serial)
+        return "".join(hex(ord(c)) for c in serial)
 
 
 def get_indexed_string(device_handle, index):
@@ -378,20 +407,20 @@ def get_indexed_string(device_handle, index):
     assert device_handle
     stat = _os.fstat(device_handle)
     try:
-        dev = _Device.from_device_number(_Context(), 'char', stat.st_rdev)
+        dev = _Device.from_device_number(_Context(), "char", stat.st_rdev)
     except (DeviceNotFoundError, ValueError):
         return None
 
-    hid_dev = dev.find_parent('hid')
+    hid_dev = dev.find_parent("hid")
     if hid_dev:
-        assert 'HID_ID' in hid_dev
-        bus, _ignore, _ignore = hid_dev['HID_ID'].split(':')
+        assert "HID_ID" in hid_dev
+        bus, _ignore, _ignore = hid_dev["HID_ID"].split(":")
 
-        if bus == '0003':  # USB
-            usb_dev = dev.find_parent('usb', 'usb_device')
+        if bus == "0003":  # USB
+            usb_dev = dev.find_parent("usb", "usb_device")
             assert usb_dev
             return usb_dev.attributes.get(key)
 
-        elif bus == '0005':  # BLUETOOTH
+        elif bus == "0005":  # BLUETOOTH
             # TODO
             pass
