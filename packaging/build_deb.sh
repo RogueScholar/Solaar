@@ -20,7 +20,7 @@ else
 fi
 export DEBMAIL="$DEBEMAIL"
 
-export DEBCHANGE_VENDOR=${DEBCHANGE_VENDOR:-$(/usr/bin/dpkg-vendor --query vendor | /usr/bin/tr 'A-Z' 'a-z')}
+export DEBCHANGE_VENDOR="${DEBCHANGE_VENDOR:-$(/usr/bin/dpkg-vendor --query vendor | /usr/bin/tr 'A-Z' 'a-z')}"
 test "$DEBCHANGE_VENDOR"
 DISTRIBUTION=${DISTRIBUTION:-UNRELEASED}
 test "$DISTRIBUTION"
@@ -37,7 +37,7 @@ DIST_DIR="$PWD/dist"
 P_NAME="$(python3 setup.py --name)"
 P_VERSION="$(python3 setup.py --version)"
 SDIST_FILE="$DIST_DIR/$P_NAME-$P_VERSION.tar.gz"
-ORIG_FILE="$DIST_DIR/${P_NAME}_${P_VERSION}.orig.tar.gz"
+ORIG_FILE="$DIST_DIR/${P_NAME}_$P_VERSION.orig.tar.gz"
 
 BUILD_DIR="$DIST_DIR/$P_NAME-$P_VERSION"
 if test -d "$BUILD_DIR"; then
@@ -45,7 +45,7 @@ if test -d "$BUILD_DIR"; then
 	exit 1
 fi
 
-export TMPDIR="$(/bin/mktemp --directory --tmpdir debbuild-$P_NAME-$P_VERSION-$USER-XXXXXX)"
+export TMPDIR="$(/bin/mktemp --directory --tmpdir debbuild-"$P_NAME-$P_VERSION-$USER"-XXXXXX)"
 
 ./tools/po-compile.sh
 python3 setup.py sdist --formats=gztar --quiet
@@ -93,7 +93,7 @@ cd "$BUILD_DIR"
 	--distribution "$DISTRIBUTION" \
 	--force-save-on-release \
 	--auto-nmu \
-	$DEBCHANGE_OPTIONS
+	"$DEBCHANGE_OPTIONS"
 
 if test "$DEBCHANGE_VENDOR" = debian; then
 	# if this is the main (Debian) build, update the source changelog
@@ -122,7 +122,7 @@ done
 /usr/bin/debuild \
 	--lintian --tgz-check \
 	--preserve-envvar=DISPLAY \
-	$DPKG_BUILPACKAGE_OPTS \
+	"$DPKG_BUILPACKAGE_OPTS" \
 	--lintian-opts --profile "$DEBCHANGE_VENDOR"
 
 /bin/rm --force --recursive "$BUILD_DIR"
