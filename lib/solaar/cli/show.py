@@ -162,7 +162,8 @@ def _print_device(dev, num=None):
             flags = common.flag_names(hidpp20_constants.FeatureFlag, flags)
             version = dev.features.get_feature_version(feature_int)
             version = version if version else 0
-            print("        %2d: %-22s {%04X} V%s    %s " % (index, feature, feature_int, version, ", ".join(flags)))
+            print("        %2d: %-22s {%04X} V%s    %s " %
+                  (index, feature, feature_int, version, ", ".join(flags)))
             if feature == SupportedFeature.HIRES_WHEEL:
                 wheel = _hidpp20.get_hires_wheel(dev)
                 if wheel:
@@ -194,7 +195,8 @@ def _print_device(dev, num=None):
                     else:
                         print("            No vertical tuning, standard mice")
             elif feature == SupportedFeature.VERTICAL_SCROLLING:
-                vertical_scrolling_info = _hidpp20.get_vertical_scrolling_info(dev)
+                vertical_scrolling_info = _hidpp20.get_vertical_scrolling_info(
+                    dev)
                 if vertical_scrolling_info:
                     print(f"            Roller type: {vertical_scrolling_info['roller']}")
                     print(f"            Ratchet per turn: {vertical_scrolling_info['ratchet']}")

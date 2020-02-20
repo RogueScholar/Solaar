@@ -68,7 +68,8 @@ def create_parser():
         "--debug",
         action="count",
         default=0,
-        help="print logging messages, for debugging purposes (may be repeated for extra verbosity)",
+        help=
+        "print logging messages, for debugging purposes (may be repeated for extra verbosity)",
     )
     arg_parser.add_argument(
         "-D",

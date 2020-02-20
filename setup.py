@@ -28,6 +28,8 @@ except Exception:  # get commit from Ubuntu dpkg-parsechangelog
 
 
 def _data_files():
+    
+
     yield "share/icons/hicolor/scalable/apps", glob("share/solaar/icons/solaar*.svg")
     yield "share/icons/hicolor/32x32/apps", glob("share/solaar/icons/solaar-light_*.png")
 

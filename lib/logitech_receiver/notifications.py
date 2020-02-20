@@ -179,10 +179,13 @@ def _process_hidpp10_notification(device: Device, notification: HIDPPNotificatio
             device.wpid = None
             if device.number in device.receiver:
                 del device.receiver[device.number]
-            device.changed(active=False, alert=Alert.ALL, reason=_("unpaired"))
+            device.changed(active=False,
+                           alert=Alert.ALL,
+                           reason=_("unpaired"))
         ##            device.status = None
         else:
-            logger.warning("%s: disconnection with unknown type %02X: %s", device, notification.address, notification)
+            logger.warning("%s: disconnection with unknown type %02X: %s", device,
+                      notification.address, notification)
         return True
 
     if notification.sub_id == Notification.DJ_PAIRING:  # device connection (and disconnection)
@@ -229,7 +232,9 @@ def _process_hidpp10_notification(device: Device, notification: HIDPPNotificatio
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("%s: device powered on", device)
             reason = device.status_string() or _("powered on")
-            device.changed(active=True, alert=Alert.NOTIFICATION, reason=reason)
+            device.changed(active=True,
+                           alert=Alert.NOTIFICATION,
+                           reason=reason)
         else:
             logger.warning("%s: unknown %s", device, notification)
         return True
@@ -308,7 +313,8 @@ def _process_feature_notification(device: Device, notification: HIDPPNotificatio
                 # trigger a new report chain
                 reports_count = 15
                 reports_period = 2  # seconds
-                device.feature_request(SupportedFeature.SOLAR_DASHBOARD, 0x00, reports_count, reports_period)
+                device.feature_request(SupportedFeature.SOLAR_DASHBOARD, 0x00, reports_count,
+                                       reports_period)
             else:
                 logger.warning("%s: unknown SOLAR CHARGE %s", device, notification)
         else:

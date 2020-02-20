@@ -69,6 +69,8 @@ class SolaarListener(listener.EventsListener):
     """Keeps the status of a Receiver or Device (member name is receiver but it can also be a device)."""
 
     def __init__(self, receiver, status_changed_callback):
+        
+
         assert status_changed_callback
         super().__init__(receiver, self._notifications_handler)
         self.status_changed_callback = status_changed_callback

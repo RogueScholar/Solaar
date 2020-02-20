@@ -58,14 +58,14 @@ DEVICES = {}
 
 
 def _D(
-    name,
-    codename=None,
-    kind=None,
-    wpid=None,
-    protocol=None,
-    registers=None,
-    settings=None,
-    usbid=None,
+        name,
+        codename=None,
+        kind=None,
+        wpid=None,
+        protocol=None,
+        registers=None,
+        settings=None,
+        usbid=None,
     interface=None,
     btid=None,
 ):
@@ -78,7 +78,8 @@ def _D(
             else DEVICE_KIND.numpad
             if "Number Pad" in name
             else DEVICE_KIND.touchpad
-            if "Touchpad" in name
+            if "Touchpad" in
+            name
             else DEVICE_KIND.trackball
             if "Trackball" in name
             else None
@@ -87,7 +88,7 @@ def _D(
 
     if protocol is not None:
         if wpid:
-            for w in wpid if isinstance(wpid, tuple) else (wpid,):
+            for w in wpid if isinstance(wpid, tuple) else (wpid, ):
                 if protocol > 1.0:
                     assert w[0:1] == "4", f"{name} has protocol {protocol:0.1f}, wpid {w}"
                 else:
@@ -123,7 +124,7 @@ def _D(
         DEVICES[codename] = device_descriptor
 
     if wpid:
-        for w in wpid if isinstance(wpid, tuple) else (wpid,):
+        for w in wpid if isinstance(wpid, tuple) else (wpid, ):
             assert w not in DEVICES_WPID, f"duplicate wpid in device descriptors: {DEVICES_WPID[w]}"
             DEVICES_WPID[w] = device_descriptor
 
@@ -280,28 +281,28 @@ _D(
     codename="MX620",
     protocol=1.0,
     wpid=("100A", "1016"),
-    registers=(Reg.BATTERY_CHARGE,),
+    registers=(Reg.BATTERY_CHARGE, ),
 )
 _D(
     "VX Nano Cordless Laser Mouse",
     codename="VX Nano",
     protocol=1.0,
     wpid=("100B", "100F"),
-    registers=(Reg.BATTERY_CHARGE,),
+    registers=(Reg.BATTERY_CHARGE, ),
 )
 _D(
     "V450 Nano Cordless Laser Mouse",
     codename="V450 Nano",
     protocol=1.0,
     wpid="1011",
-    registers=(Reg.BATTERY_CHARGE,),
+    registers=(Reg.BATTERY_CHARGE, ),
 )
 _D(
     "V550 Nano Cordless Laser Mouse",
     codename="V550 Nano",
     protocol=1.0,
     wpid="1013",
-    registers=(Reg.BATTERY_CHARGE,),
+    registers=(Reg.BATTERY_CHARGE, ),
 )
 _D(
     "MX 1100 Cordless Laser Mouse",
@@ -309,7 +310,7 @@ _D(
     protocol=1.0,
     kind=DEVICE_KIND.mouse,
     wpid="1014",
-    registers=(Reg.BATTERY_CHARGE,),
+    registers=(Reg.BATTERY_CHARGE, ),
 )
 _D("Anywhere Mouse MX", codename="Anywhere MX", protocol=1.0, wpid="1017", registers=(Reg.BATTERY_CHARGE,))
 _D(

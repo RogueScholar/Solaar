@@ -247,7 +247,8 @@ class Receiver:
         """Scan all devices."""
         if self.handle:
             if not self.write_register(Registers.RECEIVER_CONNECTION, 0x02):
-                logger.warning("%s: failed to trigger device link notifications", self)
+                logger.warning("%s: failed to trigger device link notifications",
+                          self)
 
     def notification_information(self, number, notification: HIDPPNotification) -> tuple[bool, bool, typing.Any, str]:
         """Extract information from unifying-style notification"""
@@ -314,7 +315,8 @@ class Receiver:
                 online = True
             dev = Device(self.low_level, self, number, online, pairing_info=info, setting_callback=self.setting_callback)
             if logger.isEnabledFor(logging.INFO):
-                logger.info("%s: found new device %d (%s)", self, number, dev.wpid)
+                logger.info("%s: found new device %d (%s)", self, number,
+                          dev.wpid)
             self._devices[number] = dev
             return dev
         except exceptions.NoSuchDevice as e:
@@ -326,7 +328,8 @@ class Receiver:
     def set_lock(self, lock_closed=True, device=0, timeout=0):
         if self.handle:
             action = 0x02 if lock_closed else 0x01
-            reply = self.write_register(Registers.RECEIVER_PAIRING, action, device, timeout)
+            reply = self.write_register(Registers.RECEIVER_PAIRING, action, device,
+                                        timeout)
             if reply:
                 return True
             logger.warning("%s: failed to %s the receiver lock", self, "close" if lock_closed else "open")

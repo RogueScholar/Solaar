@@ -67,14 +67,12 @@ def create(receiver):
         text += "\n"
         text += _("The channel indicator light should be blinking rapidly.")
     if receiver.remaining_pairings() and receiver.remaining_pairings() >= 0:
-        text += (
-            ngettext(
-                "\n\nThis receiver has %d pairing remaining.",
-                "\n\nThis receiver has %d pairings remaining.",
-                receiver.remaining_pairings(),
-            )
-            % receiver.remaining_pairings()
-        )
+        text += (ngettext(
+            "\n\nThis receiver has %d pairing remaining.",
+            "\n\nThis receiver has %d pairings remaining.",
+            receiver.remaining_pairings(),
+        ) %
+                      receiver.remaining_pairings())
         text += _("\nCancelling at this point will not use up a pairing.")
     ok = prepare(receiver)
     assistant = _create_assistant(receiver, ok, _finish, title, text)
@@ -115,7 +113,8 @@ def _check_lock_state(assistant, receiver, count):
     elif not receiver.pairing.lock_open and not receiver.pairing.discovering:
         if count > 0:
             # the actual device notification may arrive later so have a little patience
-            GLib.timeout_add(_STATUS_CHECK, check_lock_state, assistant, receiver, count - 1)
+            GLib.timeout_add(_STATUS_CHECK, check_lock_state, assistant,
+                             receiver, count - 1)
         else:
             _pairing_failed(assistant, receiver, "failed to open pairing lock")
         return False
@@ -215,9 +214,12 @@ def _create_assistant(receiver, ok, finish, title, text):
 
 
 def _create_success_page(assistant, device):
+    
+
     def _check_encrypted(device, assistant, hbox):
         if assistant.is_drawable() and device.link_encrypted is False:
-            hbox.pack_start(Gtk.Image.new_from_icon_name("security-low", Gtk.IconSize.MENU), False, False, 0)
+            hbox.pack_start(Gtk.Image.new_from_icon_name("security-low",
+                                         Gtk.IconSize.MENU), False, False, 0)
             hbox.pack_start(Gtk.Label(label=_("The wireless link is not encrypted")), False, False, 0)
             hbox.show_all()
         return False
@@ -244,6 +246,8 @@ def _create_success_page(assistant, device):
 
 
 def _create_failure_page(assistant, error) -> None:
+    
+
     header = _("Pairing failed") + ": " + _(str(error)) + "."
     if "timeout" in str(error):
         text = _("Make sure your device is within range, and has a decent battery charge.")
@@ -253,7 +257,8 @@ def _create_failure_page(assistant, error) -> None:
         text = _("More paired devices than receiver can support.")
     else:
         text = _("No further details are available about the error.")
-    _create_page(assistant, Gtk.AssistantPageType.SUMMARY, header, "dialog-error", text)
+    _create_page(assistant, Gtk.AssistantPageType.SUMMARY, header,
+                 "dialog-error", text)
     assistant.next_page()
     assistant.commit()
 

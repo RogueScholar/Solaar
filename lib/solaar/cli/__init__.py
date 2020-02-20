@@ -37,19 +37,22 @@ def _create_parser():
         add_help=False,
         epilog=f"For details on individual actions, run `{NAME.lower()} <action> --help`.",
     )
-    subparsers = parser.add_subparsers(title="actions", help="command-line action to perform")
+    subparsers = parser.add_subparsers(title="actions",
+                                       help="command-line action to perform")
 
     sp = subparsers.add_parser("show", description="Show information about device or all devices.")
     sp.add_argument(
         "device",
         nargs="?",
         default="all",
-        help="device to show information about; may be a device number (1..6), a serial number, "
+        help=
+        "device to show information about; may be a device number (1..6), a serial number, "
         'a substring of a device\'s name, or "all" (the default)',
     )
     sp.set_defaults(action="show")
 
-    sp = subparsers.add_parser("probe", description="Probe a receiver (debugging use only).")
+    sp = subparsers.add_parser("probe",
+                               description="Probe a receiver (debugging use only).")
     sp.add_argument(
         "receiver", nargs="?", help="select receiver by name substring or serial number when more than one is present"
     )
@@ -87,7 +90,8 @@ def _create_parser():
     sp = subparsers.add_parser(
         "pair",
         description="Pair a new device with a receiver.  The device has to be compatible with the receiver.",
-        epilog="The Logitech Unifying Receiver supports up to 6 paired devices at the same time.",
+        epilog=
+        "The Logitech Unifying Receiver supports up to 6 paired devices at the same time.",
     )
     sp.add_argument(
         "receiver", nargs="?", help="select receiver by name substring or serial number when more than one is present"
@@ -177,12 +181,9 @@ def _find_device(receivers, name):
             count = 1
 
         for dev in r:
-            if (
-                name == dev.serial.lower()
-                or name == dev.codename.lower()
-                or name == str(dev.kind).lower()
-                or name in dev.name.lower()
-            ):
+            if (name == dev.serial.lower() or name == dev.codename.lower()
+                    or name == str(dev.kind).lower()
+                    or name in dev.name.lower()):
                 yield dev
             count -= 1
             if not count:

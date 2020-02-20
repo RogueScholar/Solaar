@@ -108,7 +108,8 @@ def run_loop(
 
     application.connect(
         "startup",
-        lambda app, startup_hook: _startup(app, startup_hook, use_tray, show_window),
+        lambda app, startup_hook: _startup(app, startup_hook, use_tray,
+                                           show_window),
         startup_hook,
     )
     application.connect(GtkSignal.COMMAND_LINE.value, _command_line)

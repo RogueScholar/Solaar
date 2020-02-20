@@ -70,10 +70,7 @@ def run(receivers, args, find_receiver, _ignore):
                 % (Registers.RECEIVER_INFO % 0x100, sub_reg + device, f"0x{strhex(rgst)}" if rgst else "None")
             )
         rgst = receiver.read_register(Registers.RECEIVER_INFO, 0x40 + device)
-        print(
-            "    Pairing Name     %#04x %#02x: %s"
-            % (Registers.RECEIVER_INFO % 0x100, 0x40 + device, rgst[2 : 2 + ord(rgst[1:2])] if rgst else "None")
-        )
+        print("    Pairing Name     %#04x %#02x: %s" % (Registers.RECEIVER_INFO % 0x100, 0x40 + device, rgst[2:2 + ord(rgst[1:2])] if rgst else "None"))
         for part in range(1, 4):
             rgst = receiver.read_register(Registers.RECEIVER_INFO, 0x60 + device, part)
             print(
