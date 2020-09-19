@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-# -*- python-mode -*-
-# -*- coding: UTF-8 -*-
+#!/usr/bin/env python3
 
 ## Copyright (C) 2012-2013  Daniel Pavel
 ##
@@ -18,98 +16,198 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
+import argparse
+import faulthandler
 import importlib
+import locale
+import logging
+import os.path
+import platform
+import signal
+import sys
+import tempfile
+
+from traceback import format_exc
+
+from solaar import NAME
+from solaar import __version__
+from solaar import cli
+from solaar import configuration
+from solaar import dbus
+from solaar import listener
+from solaar import ui
+from solaar.custom_logger import CustomLogger
+
+logging.setLoggerClass(CustomLogger)
+logger = logging.getLogger(__name__)
 
 
-from solaar import __version__, NAME
-import solaar.i18n as _i18n
-import solaar.cli as _cli
+def _require(module, os_package, gi=None, gi_package=None, gi_version=None):
+    try:
+        if gi is not None:
+            gi.require_version(gi_package, gi_version)
+        return importlib.import_module(module)
+    except (ImportError, ValueError):
+        sys.exit(f"{NAME.lower()}: missing required system package {os_package}")
 
-#
-#
-#
 
-def _require(module, os_package):
-	try:
-		return importlib.import_module(module)
-	except ImportError:
-		import sys
-		sys.exit("%s: missing required package '%s'" % (NAME, os_package))
+battery_icons_style = "regular"
+tray_icon_size = None
+temp = tempfile.NamedTemporaryFile(prefix="Solaar_", mode="w", delete=True)
+
+
+def create_parser():
+    arg_parser = argparse.ArgumentParser(
+        prog=NAME.lower(),
+        description="Solaar is a program to manage many Logitech devices, "
+        "changing how they operate and maintaining the changes whenever the device connects.",
+        epilog="For more information see https://pwr-solaar.github.io/Solaar",
+    )
+    arg_parser.add_argument(
+        "-d",
+        "--debug",
+        action="count",
+        default=0,
+        help=
+        "print logging messages, for debugging purposes (may be repeated for extra verbosity)",
+    )
+    arg_parser.add_argument(
+        "-D",
+        "--hidraw",
+        action="store",
+        dest="hidraw_path",
+        metavar="PATH",
+        help="device or receiver path to use if needed. Example: /dev/hidraw2",
+    )
+    arg_parser.add_argument(
+        "--restart-on-wake-up",
+        action="store_true",
+        help="restart Solaar on sleep wake-up (experimental)",
+    )
+    arg_parser.add_argument(
+        "-w",
+        "--window",
+        choices=("show", "hide", "only"),
+        help="start with window showing / hidden / only (no tray icon)",
+    )
+    arg_parser.add_argument(
+        "-b",
+        "--battery-icons",
+        choices=("regular", "symbolic", "solaar"),
+        help="prefer regular battery / symbolic battery / solaar icons",
+    )
+    arg_parser.add_argument("--tray-icon-size", type=int, help="explicit size for tray icons")
+    arg_parser.add_argument("-V", "--version", action="version", version="%(prog)s " + __version__)
+    arg_parser.add_argument("--help-actions", action="store_true", help="describe the command-line actions")
+    arg_parser.add_argument(
+        "action",
+        nargs=argparse.REMAINDER,
+        choices=cli.actions,
+        help="command-line action to perform (optional); append ' --help' to show args",
+    )
+    return arg_parser
 
 
 def _parse_arguments():
-	import argparse
-	arg_parser = argparse.ArgumentParser(prog=NAME.lower())
-	arg_parser.add_argument('-d', '--debug', action='count', default=0,
-							help='print logging messages, for debugging purposes (may be repeated for extra verbosity)')
-	arg_parser.add_argument('-D', '--hidraw', action='store', dest='hidraw_path', metavar='PATH',
-							help='unifying receiver to use; the first detected receiver if unspecified. Example: /dev/hidraw2')
-	arg_parser.add_argument('--restart-on-wake-up', action='store_true',
-							help='restart Solaar on sleep wake-up (experimental)')
-	arg_parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + __version__)
-	arg_parser.add_argument('--help-actions', action='store_true',
-							help='print help for the optional actions')
-	arg_parser.add_argument('action', nargs=argparse.REMAINDER, choices=_cli.actions,
-							help='optional actions to perform')
+    arg_parser = create_parser()
+    args = arg_parser.parse_args()
 
-	args = arg_parser.parse_args()
+    if args.help_actions:
+        cli.print_help()
+        return
 
-	if args.help_actions:
-		_cli.print_help()
-		return
+    if args.window is None:
+        args.window = "show"  # default behaviour is to show main window
 
-	import logging
-	if args.debug > 0:
-		log_level = logging.WARNING - 10 * args.debug
-		log_format='%(asctime)s,%(msecs)03d %(levelname)8s [%(threadName)s] %(name)s: %(message)s'
-		logging.basicConfig(level=max(log_level, logging.DEBUG), format=log_format, datefmt='%H:%M:%S')
-	else:
-		logging.root.addHandler(logging.NullHandler())
-		logging.root.setLevel(logging.ERROR)
+    global battery_icons_style
+    battery_icons_style = args.battery_icons if args.battery_icons is not None else "regular"
+    global tray_icon_size
+    tray_icon_size = args.tray_icon_size
 
-	if not args.action:
-		if logging.root.isEnabledFor(logging.INFO):
-			logging.info("language %s (%s), translations path %s", _i18n.language, _i18n.encoding, _i18n.path)
+    log_format = "%(asctime)s,%(msecs)03d %(levelname)8s [%(threadName)s] %(name)s: %(message)s"
+    log_level = logging.ERROR - 10 * args.debug
+    logging.getLogger("").setLevel(min(log_level, logging.WARNING))
+    file_handler = logging.StreamHandler(temp)
+    file_handler.setLevel(max(min(log_level, logging.WARNING), logging.INFO))
+    file_handler.setFormatter(logging.Formatter(log_format))
+    logging.getLogger("").addHandler(file_handler)
+    if args.debug > 0:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(logging.Formatter(log_format))
+        stream_handler.setLevel(log_level)
+        logging.getLogger("").addHandler(stream_handler)
 
-	return args
+    if not args.action:
+        language, encoding = locale.getlocale()
+        logger.info("version %s, language %s (%s)", __version__, language, encoding)
+
+    return args
+
+
+# On first SIGINT, dump threads to stderr; on second, exit
+def _handlesig(signl, stack):
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
+    if signl == int(signal.SIGINT):
+        if logger.isEnabledFor(logging.INFO):
+            faulthandler.dump_traceback()
+        sys.exit(f"{NAME.lower()}: exit due to keyboard interrupt")
+    else:
+        sys.exit(0)
 
 
 def main():
-	_require('pyudev', 'python-pyudev')
+    if platform.system() not in ("Darwin", "Windows"):
+        _require("pyudev", "python3-pyudev")
 
-	# handle ^C in console
-	import signal
-	signal.signal(signal.SIGINT, signal.SIG_DFL)
+    args = _parse_arguments()
+    if not args:
+        # explicit close before return
+        temp.close()
+        return
+    if args.action:
+        # if any argument, run comandline and exit
+        result = cli.run(args.action, args.hidraw_path)
+        # explicit close before return
+        temp.close()
+        return result
 
-	args = _parse_arguments()
-	if not args: return
-	if args.action:
-		# if any argument, run comandline and exit
-		return _cli.run(args.action, args.hidraw_path)
+    gi = _require("gi", "python3-gi (in Ubuntu) or python3-gobject (in Fedora)")
+    _require("gi.repository.Gtk", "gir1.2-gtk-3.0", gi, "Gtk", "3.0")
 
-	gi = _require('gi', 'python-gi')
-	gi.require_version('Gtk', '3.0')
-	_require('gi.repository.Gtk', 'gir1.2-gtk-3.0')
+    # handle ^C in console
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGINT, _handlesig)
+    signal.signal(signal.SIGTERM, _handlesig)
 
-	try:
-		import solaar.ui as ui
-		import solaar.listener as listener
-		listener.setup_scanner(ui.status_changed, ui.error_dialog)
+    udev_file = "42-logitech-unify-permissions.rules"
+    if (
+        platform.system() == "Linux"
+        and logger.isEnabledFor(logging.WARNING)
+        and not os.path.isfile("/etc/udev/rules.d/" + udev_file)
+        and not os.path.isfile("/usr/lib/udev/rules.d/" + udev_file)
+        and not os.path.isfile("/usr/local/lib/udev/rules.d/" + udev_file)
+    ):
+        logger.warning("Solaar udev file not found in expected location")
+        logger.warning("See https://pwr-solaar.github.io/Solaar/installation for more information")
+    try:
+        listener.setup_scanner(ui.status_changed, ui.setting_changed, ui.common.error_dialog)
 
-		import solaar.upower as _upower
-		if args.restart_on_wake_up:
-			_upower.watch(listener.start_all, listener.stop_all)
-		else:
-			_upower.watch(listener.ping_all)
+        if args.restart_on_wake_up:
+            dbus.watch_suspend_resume(listener.start_all, listener.stop_all)
+        else:
+            dbus.watch_suspend_resume(lambda: listener.ping_all(True))
 
-		# main UI event loop
-		ui.run_loop(listener.start_all, listener.stop_all)
-	except Exception as e:
-		import sys
-		sys.exit('%s: error: %s' % (NAME.lower(), e))
+        configuration.defer_saves = True  # allow configuration saves to be deferred
+
+        # main UI event loop
+        ui.run_loop(listener.start_all, listener.stop_all, args.window != "only", args.window != "hide")
+    except Exception:
+        sys.exit(f"{NAME.lower()}: error: {format_exc()}")
+
+    temp.close()
 
 
-if __name__ == '__main__':
-	main()
+if __name__ == "__main__":
+    main()

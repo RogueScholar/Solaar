@@ -5,12 +5,27 @@ __pycache__/
 *.mo
 
 /lib/Solaar.egg-info/
+/lib/solaar.egg-info/
+/lib/solaar/commit
 /build/
 /sdist/
 /dist/
 /deb_dist/
 /MANIFEST
 
+.coverage
+/htmlcov/
+
 /docs/captures/
 /share/logitech_icons/
 /share/locale/
+
+/po/*.po~
+
+/.idea/
+
+.DS_Store
+._*
+
+Pipfile
+Pipfile.lock

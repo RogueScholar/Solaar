@@ -3,90 +3,140 @@ title: Manual Installation
 layout: page
 ---
 
-# Manual installation
+# Installing from PyPI
 
-### Requirements
+An easy way to install the most recent release version of Solaar is from the PyPI repository.
+First install pip, and then run
+`pip install --user solaar` or `pipx install --system-site-packages solaar`.
 
-You should have a reasonably new kernel (4.0+), with kernel modules `hid-logitech-dj`
-and `hid-logitech-hidpp` loaded.   Also, the `udev` package must be installed
-and the daemon running.  If you have a recent Linux distribution (2017+), you are
-most likely good to go.
+This will not install the Solaar udev rule, which you will need to install manually by copying
+`~/.local/lib/udev/rules.d/42-logitech-unify-permissions.rules`
+to `/etc/udev/rules.d` as root.
 
-Solaar requires Python 2.7.3 or 3.2+ (either version should work),
-and the `python-pyudev`/`python3-pyudev` package. 
+## Installing in macOS
 
-To run the GUI, solaar also requires Gtk3, and its GObject
-Introspection bindings. The Debian/Ubuntu package names are
-`python-gi`/`python3-gi` and `gir1.2-gtk-3.0`; if you're using another
-distribution the required packages are most likely named something similar.
-If the desktop notifications bindings are also installed (`gir1.2-notify-0.7`),
-you will also get desktop notifications when devices come online/go offline.
+Solaar has limited support for macOS. You can use it to pair devices and configure settings
+but the rule system and diversion will not work.
 
-For gnome-shell/Unity support, you also need to have `gir1.2-appindicator3-0.1`
-installed.
+After installing Solaar via pip use homebrew to install the needed libraries:
+```
+brew update
+brew install hidapi gtk+3 pygobject3
+```
 
+### Optional: Set up macOS launcher
+* Option A (recommended): Configure a LaunchAgent to automatically start Solaar and keep it running in the background.
+It will also automatically restart Solaar if it crashed or closed.
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/pwr-Solaar/Solaar/refs/heads/master/tools/create-macos-launchagent.sh)
+```
+* Option B: Create Solaar.app launcher in /Applications.
+It can be added to Login Items to start on login, but it will not automatically recover on crashes.
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/pwr-Solaar/Solaar/refs/heads/master/tools/create-macos-app.sh)
+```
 
-### Downloading
+# Installating from GitHub
 
-Clone solaar from GitHub via `git clone https://github.com/pwr-Solaar/Solaar.git`
+## Downloading
 
+Clone Solaar from GitHub by `git clone https://github.com/pwr-Solaar/Solaar.git`.
 
-### Running from the Download Directories
+## Installing using the Makefile
 
-To access the USB devices you may need to run solaar as super user.
-Go to the solaar directory and `sudo bin/solaar` for the GUI
-or `sudo bin/solaar <command> <arguments>` for the CLI.
+Solaar has a makefile that can be used to easily install Solaar after cloning the repository.
 
-If you are running a security-enhanced Linux (RedHat or Fedora)
-you may have to turn off enforcing mode.
+First, install the needed system packages by `make install_apt`
+or `make install_dnf` or `make install_brew`.
+These might not install all needed packages in older versions of your distribution.
+Next, install the Solaar rule via `make install_udev`.
+Finally, install Solaar via `make install_pip` or `make install_pipx`.
 
+Parts of the installation process require sudo privileges so you may be asked for your password.
 
-### Installation
+## Running from the download directory
 
-Normally USB devices are not accessible for r/w by regular users, so you will
-need to do a one-time udev rule installation to allow access to the Logitech
-Unifying Receiver.
+To run Solaar from the download directory, just cd to there and run `bin/solaar` for the GUI
+or `bin/solaar <command> <arguments>` for the CLI.
 
-You can run the `rules.d/install.sh` script from Solaar to do this installation
-automatically (make sure to run it as your regular desktop user, it will switch
-to root when necessary), or you can do all the required steps by hand, as the
-root user:
+## Requirements for Solaar
 
-1. Copy `rules.d/42-logitech-unifying-receiver.rules` from Solaar to
-   `/etc/udev/rules.d/`. The `udev` daemon will automatically pick up this file
-   using inotify.
+This is only relevant if you have problems with the easier methods above.
 
-   By default, the rule allows all members of the `plugdev` group to have
-   read/write access to the Unifying Receiver device. (standard Debian/Ubuntu
-   group for pluggable devices). It may need changes, specific to your
-   particular system's configuration. If in doubt, replacing `GROUP="plugdev"`
-   with `GROUP="<your username>"` should just work.
+Solaar needs a reasonably new kernel with kernel modules `hid-logitech-dj` and `hid-logitech-hidpp` loaded.
+The kernel option CONFIG_HIDRAW also needs to be enabled.
+Most of Solaar should work fine with any kernel more recent than 5.2,
+but newer kernels might be needed for some devices to be correctly recognized and handled.
+The `udev` package must be installed and its daemon running.
 
-2. Physically remove the Unifying Receiver and re-insert it.
+Solaar requires Python 3.7+ and requires several packages to be installed.
+If you are running the system version of Python you should have the
+`python3-pyudev`, `python3-psutil`, `python3-xlib`, `python3-evdev`, `python3-typing-extensions`, `dbus-python`
+or `python3-dbus`, and `python3-yaml` or `python3-pyyaml` packages installed.
 
-   This is necessary because if the receiver is already plugged-in, it already
-   has a `/dev/hidrawX` device node, but with the old (`root:root`) permissions.
-   Plugging it again will re-create the device node with the right permissions.
+To run the GUI Solaar also requires Gtk3 and its GObject introspection bindings.
+If you are running the system version of Python in Debian/Ubuntu you should have the
+`python3-gi` and `gir1.2-gtk-3.0` packages installed.
+In Fedora you need `gtk3` and `python3-gobject`.
+You may have to install `gcc` and the Python development package (`python3-dev` or `python3-devel`,
+depending on your distribution).
+Other system packages may be required depending on your distribution, such as `python-gobject-common-devel` and `python-typing-extensions'.
+Although the Solaar CLI does not require Gtk3,
+`solaar config` does use Gtk3 capabilities to determine whether the Solaar GUI is running
+and thus should tell the Solaar GUI to update its information about settings
+so it is a good idea to have Gtk3 available even for the Solaar CLI.
 
-3. Make sure your desktop users are part of the `plugdev` group, by running
-   `gpasswd -a <desktop username> plugdev`. If these users were not assigned to the
-   group before, they must re-login for the changes to take effect.
+Solaar needs a library to interact with the system tray.
+The library that provides this interaction depends on the distribution and window system.
+If ayatana appindicator is available then it is best to have this library installed,
+e.g., by installing `libayatana-appindicator` or `gir1.2-ayatanaappindicator3-0.1` or similar,
+depending on distribution.
+Otherwise appindicator can sometimes be used,
+e.g., by installing `libappindicator-gtk3` or `gir1.2-appindicator3-0.1` or similar,
+depending on distribution.
 
+If desktop notifications bindings are also installed
+(`gir1.2-notify-0.7` for Debian/Ubuntu),
+you will also see desktop notifications when devices come online and go offline.
 
-Then solaar can be run from the download directory without using sudo.
+Solaar includes its own version of `hid_parser` because the version that is in PyPi
+(at https://pypi.org/project/hid-parser/) does not have some changes that are in
+https://github.com/usb-tools/python-hid-parser and are needed for some devices.
+Do not use pip to install hid_parser!
+Some distributions (e.g., Fedora) may separately package this code.
 
-Python programs are usually installed using [pip][pip].
-The pip instructions for solaar are in `setup.py`, the standard place to put such instructions.
+If the `gitinfo` Python package is available, Solaar shows better information
+about which version of Solaar is running.
+This package may not be available in some distributions but can be installed using pip
+via `pip install --user python-git-info`.
 
-To install solaar for yourself only run `pip install --user .` from the solaar directory.
-This tells pip to install into your `.local` directory. You can then run solaar as 
- `~/.local/bin/solaar`.
+If you are running a version of Python different from the system version,
+you may need to use pip to install projects that provide the above Python packages.
 
-Installing python programs to system directories using pip is generally frowned on both
-because this runs arbitrary code as root and because this can override existing python libraries
-that other users or even the system depend on.  If you want to install solaar to /usr/local run
-`sudo bash -c 'umask 022 ; pip install .'` in the solaar directory.
-(The umask is needed so that the created files and directories can be read and executed by everyone.)
-Then solaar can be run as /usr/local/bin/solaar.
+Solaar runs best under X11 with the Xtest extension enabled so that Solaar rules can fake keyboard input using Xtest.
+Solaar also uses the X11 library to access the XKB extension,
+which requires installation of the X11 development package.
+(In Fedora this is `libX11-devel`.  In other distributions it may be `libX11-dev`.)
+Solaar will run under Wayland but some parts of Solaar rules will not work.
+For more information see [the rules page](https://pwr-solaar.github.io/Solaar/rules).
 
-[pip]: https://en.wikipedia.org/wiki/Pip_(package_manager)
+## Installing Solaar's udev rule manually
+
+You can install Solaar's udev rule manually by copying the file
+`rules.d/42-logitech-unify-permissions.rules`
+as root from the Solaar repository to `/etc/udev/rules.d`.
+Let udev reload its rules by running `sudo udevadm control --reload-rules`.
+
+# Solaar in other languages
+
+If you want to have Solaar's user messages in some other language you need to run
+`tools/po-compile.sh` to create the translation files before running or installing Solaar
+and set the LANGUAGE environment variable appropriately when running Solaar.
+
+# Running Solaar at Startup
+
+Distributions can cause Solaar can be run automatically at user login by installing a desktop file at
+`/etc/xdg/autostart/solaar.desktop`. An example of this file content can be seen in the repository at
+[`share/autostart/solaar.desktop`](https://github.com/pwr-Solaar/Solaar/blob/master/share/autostart/solaar.desktop).
+
+If you install Solaar yourself you may need to create or modify this file or install a startup file under your home directory.

@@ -1,6 +1,3 @@
-# -*- python-mode -*-
-# -*- coding: UTF-8 -*-
-
 ## Copyright (C) 2012-2013  Daniel Pavel
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -17,20 +14,25 @@
 ## with this program; if not, write to the Free Software Foundation, Inc.,
 ## 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 
 def run(receivers, args, find_receiver, find_device):
-	assert receivers
-	assert args.device
+    assert receivers
+    assert args.device
 
-	device_name = args.device.lower()
-	dev = find_device(receivers, device_name)
+    device_name = args.device.lower()
+    dev = next(find_device(receivers, device_name), None)
+    if not dev:
+        raise Exception(f"no device found matching '{device_name}'")
 
-	# query these now, it's last chance to get them
-	try:
-		number, codename, wpid, serial  = dev.number, dev.codename, dev.wpid, dev.serial
-		del dev.receiver[number]
-		print ('Unpaired %d: %s (%s) [%s:%s]' % (number, dev.name, codename, wpid, serial))
-	except Exception as e:
-		raise Exception('failed to unpair device %s: %s' % (dev.name, e))
+    if not dev.receiver.may_unpair:
+        print(
+            f"Receiver with USB id {dev.receiver.product_id} for {dev.name} [{dev.wpid}:{dev.serial}] does not unpair,",
+            "but attempting anyway.",
+        )
+    try:
+        # query these now, it's last chance to get them
+        number, codename, wpid, serial = dev.number, dev.codename, dev.wpid, dev.serial
+        dev.receiver._unpair_device(number, True)  # force an unpair
+        print(f"Unpaired {int(number)}: {dev.name} ({codename}) [{wpid}:{serial}]")
+    except Exception as e:
+        raise e
