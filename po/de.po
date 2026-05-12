@@ -6,8 +6,8 @@
 msgid   ""
 msgstr  "Project-Id-Version: solaar 1.0.1\n"
         "Report-Msgid-Bugs-To: \n"
-        "POT-Creation-Date: 2023-12-28 17:40+0100\n"
-        "PO-Revision-Date: 2023-07-07 11:06+0200\n"
+        "POT-Creation-Date: 2026-05-11 19:38+0200\n"
+        "PO-Revision-Date: 2026-05-11 19:35+0200\n"
         "Last-Translator: Daniel Frost <one@frostinfo.de>\n"
         "Language-Team: none\n"
         "Language: de\n"
@@ -16,7 +16,7 @@ msgstr  "Project-Id-Version: solaar 1.0.1\n"
         "Content-Transfer-Encoding: 8bit\n"
         "Plural-Forms: nplurals=2; plural=n != 1;\n"
         "X-Launchpad-Export-Date: 2021-04-17 16:52+0000\n"
-        "X-Generator: Poedit 3.3.2\n"
+        "X-Generator: Poedit 3.4.2\n"
 
 #: lib/logitech_receiver/base_usb.py:46
 msgid   "Bolt Receiver"
@@ -753,27 +753,28 @@ msgstr  "Mit zwei Fingern vom oberen Bildschirmrand wischen"
 #: lib/logitech_receiver/settings_templates.py:944
 #: lib/logitech_receiver/settings_templates.py:948
 msgid   "Pinch to zoom out; spread to zoom in."
-msgstr  "Kneifgeste zum Verkleinern; Spreizgeste zum Vergrößern."
+msgstr  "Zusammenziehen-Geste zum Verkleinern; Auseinanderbewegen-Geste zum "
+        "Vergrößern."
 
 #: lib/logitech_receiver/settings_templates.py:944
 msgid   "Zoom with two fingers."
-msgstr  "Vergrößerung mit zwei Fingern ändern."
+msgstr  "Zoom mit zwei Fingern."
 
 #: lib/logitech_receiver/settings_templates.py:945
 msgid   "Pinch to zoom out."
-msgstr  "Kneifgeste zum Verkleinern."
+msgstr  "Zusammenziehen-Geste zum Verkleinern."
 
 #: lib/logitech_receiver/settings_templates.py:946
 msgid   "Spread to zoom in."
-msgstr  "Spreizgeste zum Vergrößern."
+msgstr  "Auseinanderbewegen-Geste zum Vergrößern."
 
 #: lib/logitech_receiver/settings_templates.py:947
 msgid   "Zoom with three fingers."
-msgstr  "Vergrößerung mit drei Fingern ändern."
+msgstr  "Zoom mit drei Fingern."
 
 #: lib/logitech_receiver/settings_templates.py:948
 msgid   "Zoom with two fingers"
-msgstr  "Vergrößerung mit zwei Fingern"
+msgstr  "Zoom mit zwei Fingern"
 
 #: lib/logitech_receiver/settings_templates.py:966
 msgid   "Pixel zone"
@@ -1240,7 +1241,7 @@ msgstr  "Gerät"
 
 #: lib/solaar/ui/diversion_rules.py:524 lib/solaar/ui/diversion_rules.py:2297
 msgid   "Host"
-msgstr  ""
+msgstr  "Host"
 
 #: lib/solaar/ui/diversion_rules.py:525 lib/solaar/ui/diversion_rules.py:2339
 msgid   "Setting"
@@ -1480,7 +1481,7 @@ msgstr  "Maustaste"
 
 #: lib/solaar/ui/diversion_rules.py:1922
 msgid   "Count and Action"
-msgstr  ""
+msgstr  "Anzahl und Aktion"
 
 #: lib/solaar/ui/diversion_rules.py:1972
 msgid   "Execute a command with arguments."
@@ -1518,11 +1519,11 @@ msgstr  "Das Gerät ist aktiv und die Einstellungen können geändert werden."
 
 #: lib/solaar/ui/diversion_rules.py:2266
 msgid   "Device that originated the current notification."
-msgstr  ""
+msgstr  "Gerät, von dem die aktuelle Benachrichtigung stammt."
 
 #: lib/solaar/ui/diversion_rules.py:2280
 msgid   "Name of host computer."
-msgstr  ""
+msgstr  "Name des Host-Computers."
 
 #: lib/solaar/ui/diversion_rules.py:2347
 msgid   "Value"
@@ -1665,7 +1666,7 @@ msgstr  "\n"
 
 #: lib/solaar/ui/tray.py:58
 msgid   "No supported device found"
-msgstr  ""
+msgstr  "Kein unterstütztes Gerät gefunden"
 
 #: lib/solaar/ui/tray.py:64 lib/solaar/ui/window.py:319
 #, python-format
@@ -1882,9 +1883,6 @@ msgstr  "%(light_level)d Lux"
 #~ msgid        "DPI Sliding Adjustment"
 #~ msgstr       "DPI-Anpassung durch seitliches Bewegen"
 
-#~ msgid        "Device originated the current notification."
-#~ msgstr       "Die aktuelle Be­nach­rich­ti­gung entspringt dem Gerät."
-
 #~ msgid        "Diverted key or button depressed or released.\n"
 #~      "Use the Key/Button Diversion setting to divert keys and buttons."
 #~ msgstr       "Umgeleitete Taste oder Maustaste gedrückt bzw. losgelassen.\n"
@@ -1925,9 +1923,6 @@ msgstr  "%(light_level)d Lux"
 #~      "and plugging it back in."
 #~ msgstr       "Wenn Sie Solaar gerade neu installiert haben, versuchen Sie "
 #~      "den Empfänger aus- und wieder einzustecken."
-
-#~ msgid        "No Logitech device found"
-#~ msgstr       "Kein Logitechgerät gefunden"
 
 #~ msgid        "No Logitech receiver found"
 #~ msgstr       "Kein Logitech-Empfänger gefunden"
