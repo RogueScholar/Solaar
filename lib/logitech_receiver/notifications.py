@@ -322,9 +322,14 @@ def _process_feature_notification(device: Device, notification: HIDPPNotificatio
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("wireless status: %s", notification)
             reason = "powered on" if notification.data[2] == 1 else None
-            if notification.data[1] == 1:  # device is asking for software reconfiguration so need to change status
+            if notification.data[1] == 1:  # device is asking for software reconfiguration
                 alert = Alert.NONE
-                device.changed(active=True, alert=alert, reason=reason, push=True)
+                device.changed(active=True, alert=alert, reason=reason)
+                # changed(active=True) already runs apply_settings_if_needed on
+                # the first transition; for follow-up reconfig notifications
+                # on an already-active device, fire the gate here so the
+                # cookie comparison decides whether to re-push.
+                device.apply_settings_if_needed()
         else:
             logger.warning("%s: unknown WIRELESS %s", device, notification)
 
